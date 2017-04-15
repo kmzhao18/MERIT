@@ -18,7 +18,7 @@ th.diffexp <- 0.05 // differential expression cutoff (0.01 is equivalent to FC 2
 th.prob <- 0.49 <br />
 
 // eta^2 p value cutoff - after bonferroni <br />
-th.pval_fdr <- 0.05 <br />
+th.pval_fdr <- 0.001 <br />
 
 
 // number of cpus <br />
