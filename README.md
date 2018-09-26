@@ -1,21 +1,21 @@
 # MERIT
 
 ## About
-METACLUSTER facilitates comprehensive condition and tissue-specific functionality analysis of metabolic gene clusters based on a probabilistic framework for characterizing metabolic gene clusters using context-specific gene expression information
+MERIT
 
 [Contact the author](mailto:mbanf.research@gmail.com) in case you've found a bug. 
 
 ## Installation
-The easiest way to install `METACLUSTER` is through `devtools`
+The easiest way to install `MERIT` is through `devtools`
 
 ```
 library(devtools)
-install_github("METACLUSTER","mbanf/METACLUSTER")
+install_github("MERIT","mbanf")
 ```
 
 ## Usage
 
-To run the METACLUSTER A.thaliana with Schlapfer et al. 2017 data you can download the A. thaliana datasets from onedrive, using the following link:
+To run the MERIT A.thaliana with data you can download the A. thaliana datasets from onedrive, using the following link:
 ```
 https://1drv.ms/u/s!Avm82Xhe9EZj1hRSMsADlU4T6EB3
 
@@ -23,9 +23,9 @@ https://1drv.ms/u/s!Avm82Xhe9EZj1hRSMsADlU4T6EB3
 
 
 ```
-library(METACLUSTER) # load package
+library(MERIT) # load package
 
-setwd("/User/home/athaliana_schlapfer2017") # set working directory to the dataset files
+setwd("/User/home/athaliana2017") # set working directory to the dataset files
 
 # install_and_load_libraries()
 
