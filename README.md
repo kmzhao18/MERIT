@@ -124,5 +124,5 @@ Gene cluster functionality annotation for A.thaliana with Schlapfer et al. 2017 
 
 ## Notes
 
-We are currently compiling a set of helper functions to assist with compiling differential expression matrices (fold change and p-value)
+We are currently compiling a set of helper functions to assist with compiling differential expression matrices (fold change and p-value), transcription factor binding, as used in the study
 
