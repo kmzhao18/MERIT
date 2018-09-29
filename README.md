@@ -125,7 +125,10 @@ Gene cluster context specific co-expression heatmap inferred by METACLUSTER of t
 
 ## Notes
 
-We are currently compiling a set of helper functions to assist with compiling differential expression matrices (fold change and p-value)
+We are currently compiling a set of helper functions to assist with:
+- compiling differential expression matrices (fold change and p-value)
+- webcrawling motifs and TFBS from PlantPan
+- binding to promoter regions .... 
 
 
 Installation of devtools dependencies under Ubuntu (prior to installing devtools):
