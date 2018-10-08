@@ -36,12 +36,11 @@ Load datasets parameters:
 * `filename.pvalue_differentialExpression`  differential expression data (p-values)
 * `filename.experiment_condition_tissue_annotation` experiment to treatment and tissue annotation
 * `filename.transcriptionfactor_annotation` transcription factor with family annotation 
-* `filename.geneGroups` 
+* `filename.geneGroups` gene group dataset (here metabolic domains)
 
 ```
 l.data  =  load_datasets(filename.genes = "data/genes.txt",
                          filename.experiment_series_ids = "data/experiment_series_ids.txt",
-                         filename.condition_groups = "data/conditionGroups.txt",
                          filename.foldChange_differentialExpression = "data/m.foldChange_differentialExpression.txt",
                          filename.pvalue_differentialExpression =	"data/m.pvalue_differentialExpression.txt",
                          filename.experiment_condition_tissue_annotation =	"data/df.experiment_condition_annotation.txt",
@@ -54,16 +53,16 @@ MERIT Parameter sets:
 !We set b.load_grn_inference = "yes", b.load_TFBS_inference = "yes, and b.load_treatment_tissue_inference = "yes for the PMN 2017 A.thaliana gene cluster predictions data, as we have pre-computed and provided all co-differential expression datasets  - for other datasets, set to "no"! - modular structrucar
 
 
-* `b.load_grn_inference` ("yes", "no")
-* `b.load_TFBS_inference` ("yes","no")
-* `b.load_treatment_tissue_inference` ("yes","no")
+* `b.load_grn_inference` load precomputed grns ("yes", "no")
+* `b.load_TFBS_inference` load precomputed TFBS with GRN ("yes","no")
+* `b.load_treatment_tissue_inference` load precomputed annotation filgerung ("yes","no")
 
 * `m.foldChange_differentialExpression` differential expression foldchange matrix - rows are genes, cols are experiments
 * `m.pvalue_differentialExpression` differential expression pvalue matrix - rows are genes, cols are experiments
 * `df.experiment_condition_annotation` experiment condition annotation
-* `df.geneCluster` gene cluster dataset
+* `df.geneGroups` 
 * `tb.geneGroups`
-* `v.geneGroups`
+* `v.geneGroups` 
 * `l.geneGroups`
 * `tb.condition_treatments` table of conditions
 * `tb.condition_tissues` table of tissues
@@ -112,10 +111,10 @@ l.results = run_MERIT(b.load_grn_inference = "yes",
                       tb.condition_treatments = l.data$tb.condition_treatments,
                       tb.condition_tissues = l.data$tb.condition_tissues,
                       df.transcriptionFactorAnnotation = l.data$df.transcriptionFactorAnnotation, 
-                      df.geneGroups = df.geneGroups,
-                      tb.geneGroups = tb.geneGroups,
-                      v.geneGroups = v.geneGroups,
-                      l.geneGroups = l.geneGroups, 
+                      df.geneGroups = l.data$df.geneGroups,
+                      tb.geneGroups = l.data$tb.geneGroups,
+                      v.geneGroups = l.data$v.geneGroups,
+                      l.geneGroups = l.data$l.geneGroups, 
                       n.cpus = 3,
                       seed = 1234,
                       importance.measure = "impurity",
@@ -155,18 +154,12 @@ evaluate_and_store_results(df.cluster_annotations=l.results$df.cluster_annotatio
 ```
 
 
-A) Overview of the MERIT framework. B) Metabolic gene cluster functionality overview map inferred by METACLUSTER for the Schlapfer et al. 2017 A.thaliana gene cluster predictions data (Color values denote the number of active gene clusters per condition).
+A) Overview of the MERIT framework.
 ![Alt text](/figure1.jpg?raw=true "functionality map")
 
 
-Gene cluster context specific co-expression heatmap inferred by METACLUSTER of the C666 from Schlapfer et al. 2017
-![Alt text](/C666_3.jpg?raw=true "coexpression map")
 
 ## Notes
-
-We are currently compiling a set of helper functions to assist with:
-- compiling differential expression matrices (fold change and p-value)
-
 
 Installation of devtools dependencies under Ubuntu (prior to installing devtools):
 sudo apt-get install build-essential libcurl4-gnutls-dev libxml2-dev libssl-dev
