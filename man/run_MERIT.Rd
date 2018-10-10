@@ -102,7 +102,8 @@ run algorithm
 
 setwd(...) # set to dataset
 
-# install_and_load_libraries
+#install_and_load_libraries()
+
 
 l.data  =  load_datasets(filename.genes = "data/genes.txt",
                          filename.experiment_series_ids = "data/experiment_series_ids.txt",
@@ -111,6 +112,7 @@ l.data  =  load_datasets(filename.genes = "data/genes.txt",
                          filename.experiment_condition_tissue_annotation =	"data/df.experiment_condition_annotation.txt",
                          filename.transcriptionfactor_annotation = "data/df.transcriptionFactorAnnotation.txt", 
                          filename.geneGroups = "data/df.enzymes_w_metabolic_domains.txt")
+
 
 
 l.results = run_MERIT(b.load_grn_inference = "yes",
@@ -156,15 +158,14 @@ l.results = run_MERIT(b.load_grn_inference = "yes",
                       foldername.results = "results/")
 
 
-
-l.res.grn = l.results$l.res.grn, 
-l.res.grn_tfbs = l.results$l.res.grn_tfbs, 
-l.res.link_annotation = l.results$l.res.link_annotation,
+l.res.grn = l.results$l.res.grn
+l.res.grn_tfbs = l.results$l.res.grn_tfbs
+l.res.link_annotation = l.results$l.res.link_annotation
 l.res.MR_hierarchy = l.results$l.res.MR_hierarchy
 
 
 format_results(l.grn_subnetworks = l.res.link_annotation$l.grn_subnetworks,
-               tb.condition_tissue_differentialExpression = tb.condition_tissue_differentialExpression,
+               tb.condition_tissue_differentialExpression = l.res.link_annotation$tb.condition_tissue_differentialExpression,
                l.Hierarchy=l.res.MR_hierarchy$l.Hierarchy, 
                l.Hierarchy_tfs_per_tier=l.res.MR_hierarchy$l.Hierarchy_tfs_per_tier,
                l.Hierarchy_nb_tfs_per_tier=l.res.MR_hierarchy$l.Hierarchy_nb_tfs_per_tier,
@@ -173,9 +174,14 @@ format_results(l.grn_subnetworks = l.res.link_annotation$l.grn_subnetworks,
                m.MR_vs_conditions = l.res.MR_hierarchy$m.MR_vs_conditions,  # A) TFs versus Conditions (Matrix plot) P(TF,C)
                l.MR_vs_geneGroups_given_condition = l.res.MR_hierarchy$l.MR_vs_geneGroups_given_condition,  # B) per condition - TFs versus Domains (P(TF,D|C)) => also cumulative plot 
                number_of_conditions_per_master_regulator=l.res.MR_hierarchy$number_of_conditions_per_master_regulator,
-               df.transcriptionFactorAnnotation, 
-               df.geneGroups,
+               tb.condition_treatments=l.data$tb.condition_treatments,
+               tb.condition_tissues=l.data$tb.condition_tissues,
+               df.transcriptionFactorAnnotation=l.data$df.transcriptionFactorAnnotation, 
+               df.geneGroups=l.data$df.geneGroups,
+               tb.geneGroups=l.data$tb.geneGroups,
+               v.geneGroups=l.data$v.geneGroups,
+               l.geneGroups=l.data$l.geneGroups,
+               th.pval = 0.05,
                foldername.results = "results/")
-
-
+               
 }
