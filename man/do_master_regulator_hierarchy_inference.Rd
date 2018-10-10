@@ -4,12 +4,11 @@
 \alias{do_master_regulator_hierarchy_inference}
 \title{Step 4 - Master regulator hierarchy inference}
 \usage{
-do_master_regulator_hierarchy_inference(m.grn = m.grn,
-  l.grn_subnetworks = l.grn_subnetworks,
-  df.transcriptionFactorAnnotation = df.transcriptionFactorAnnotation,
-  df.geneGroups, tb.geneGroups, v.geneGroups, l.geneGroups,
-  th.min_number_targets = 2, th.min_number_MR_targets = 2,
-  th.pval = 0.05, foldername.results = "results/")
+do_master_regulator_hierarchy_inference(m.grn, l.grn_subnetworks,
+  df.transcriptionFactorAnnotation, df.geneGroups, tb.geneGroups,
+  v.geneGroups, l.geneGroups, th.min_number_targets = 2,
+  th.min_number_MR_targets = 2, th.pval = 0.05,
+  foldername.results = "results/")
 }
 \arguments{
 \item{m.grn}{= m.grn,}

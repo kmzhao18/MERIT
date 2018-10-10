@@ -815,9 +815,9 @@ compute_linearRegressionWithStabilitySelection_based_GRN <- function(mat.express
 #' @keywords 
 #' @export
 #' @examples
-compute_ensemble_regression_with_montecarlo_based_stability_selection <- function(m.foldChange_differentialExpression=l.data$m.foldChange_differentialExpression,
-                                                                                df.transcriptionFactorAnnotation=l.data$df.transcriptionFactorAnnotation,
-                                                                                df.geneGroups=df.geneGroups,
+compute_ensemble_regression_with_montecarlo_based_stability_selection <- function(m.foldChange_differentialExpression,
+                                                                                df.transcriptionFactorAnnotation,
+                                                                                df.geneGroups,
                                                                                 seed=1234,
                                                                                 importance.measure="impurity",
                                                                                 n.trees=1000,
@@ -938,8 +938,8 @@ compute_ensemble_regression_with_montecarlo_based_stability_selection <- functio
 #' @param ngrnSupport = 1
 #' @keywords 
 #' @export
-load_lead_support_grn <- function(df.transcriptionFactorAnnotation=df.transcriptionFactorAnnotation,
-                                   df.geneGroups = df.geneGroups, 
+load_lead_support_grn <- function(df.transcriptionFactorAnnotation,
+                                   df.geneGroups, 
                                    th.lead_grn_method = 0.95,
                                    n.lead_method_expression_shuffling = 3,
                                    th.support_grn_methods = 0.95,
@@ -1166,7 +1166,7 @@ load_datasets = function(filename.genes = "data/genes.txt",
 #' @export
 #' @examples
 #' install_and_load_libraries()
-transcriptionFactorBindingInference <- function(m.grn = m.lead_suppport.grn, 
+transcriptionFactorBindingInference <- function(m.grn, 
                                                 file.TF_to_Motif_IDs = "",
                                                 file.TFBS_motifs = "",
                                                 file.promoterSeq = "",
@@ -1481,13 +1481,13 @@ evaluate_tissues_per_treatment <- function(tb.tissues_per_treatment_per_link,  t
 
 
 
-perform_treatment_and_tissue_filtering <- function(m.grn = m.grn, 
-                                                   m.de.bin = m.de.bin, 
-                                                   v.conditionGroups = v.conditionGroups, 
-                                                   v.tissueGroups = v.tissueGroups,
-                                                   df.annotation = df.annotation,
-                                                   tb.condition_treatments=tb.condition_treatments,
-                                                   tb.condition_tissues=tb.condition_tissues,
+perform_treatment_and_tissue_filtering <- function(m.grn, 
+                                                   m.de.bin, 
+                                                   v.conditionGroups, 
+                                                   v.tissueGroups,
+                                                   df.annotation,
+                                                   tb.condition_treatments,
+                                                   tb.condition_tissues,
                                                    th.pval.treatment = 0.05, 
                                                    th.pval.tissue = 0.05,
                                                    th.min.samples = 1, 
@@ -1775,13 +1775,13 @@ perform_treatment_and_tissue_filtering <- function(m.grn = m.grn,
 #' @keywords 
 #' @export
 #' @examples
-annotate_links_with_treatments_and_tissues <- function(m.lead_support_w_motif.grn=m.lead_suppport_w_motif.grn, 
-                                                       m.pvalue_differentialExpression=m.pvalue_differentialExpression,
-                                                       df.experiment_condition_annotation=df.experiment_condition_annotation,
-                                                       tb.condition_treatments=tb.condition_treatments,
-                                                       tb.condition_tissues=tb.condition_tissues,
-                                                       v.conditionGroups=v.conditionGroups, 
-                                                       v.tissueGroups=v.tissueGroups,
+annotate_links_with_treatments_and_tissues <- function(m.lead_support_w_motif.grn, 
+                                                       m.pvalue_differentialExpression,
+                                                       df.experiment_condition_annotation,
+                                                       tb.condition_treatments,
+                                                       tb.condition_tissues,
+                                                       v.conditionGroups, 
+                                                       v.tissueGroups,
                                                        th.diffexp = 0.05,
                                                        th.pval.treatment = 0.05, 
                                                        th.pval.tissue = 0.05,
@@ -2223,9 +2223,9 @@ identify_regulatory_hierachy = function(m.MR_vs_conditions,
 #' @keywords 
 #' @export
 #' @examples
-do_master_regulator_hierarchy_inference = function(m.grn = m.grn,
-                                                   l.grn_subnetworks = l.grn_subnetworks, 
-                                                   df.transcriptionFactorAnnotation = df.transcriptionFactorAnnotation,
+do_master_regulator_hierarchy_inference = function(m.grn,
+                                                   l.grn_subnetworks, 
+                                                   df.transcriptionFactorAnnotation,
                                                    df.geneGroups,
                                                    tb.geneGroups,
                                                    v.geneGroups,
@@ -2421,23 +2421,23 @@ do_master_regulator_hierarchy_inference = function(m.grn = m.grn,
 #' This function formats all results
 #' @keywords 
 #' @export
-format_results = function(l.grn_subnetworks = l.grn_subnetworks,
-                          tb.condition_tissue_differentialExpression = tb.condition_tissue_differentialExpression,
-                          l.Hierarchy=l.Hierarchy, 
-                          l.Hierarchy_tfs_per_tier=l.Hierarchy_tfs_per_tier,
-                          l.Hierarchy_nb_tfs_per_tier=l.Hierarchy_nb_tfs_per_tier,
-                          l.df.masterRegulatorHierarchy=l.df.masterRegulatorHierarchy,
-                          v.number_tiers=v.number_tiers,
-                          m.MR_vs_conditions = m.MR_vs_conditions,  # A) TFs versus Conditions (Matrix plot) P(TF,C)
-                          l.MR_vs_geneGroups_given_condition = l.MR_vs_geneGroups_given_condition,  # B) per condition - TFs versus Domains (P(TF,D|C)) => also cumulative plot 
-                          number_of_conditions_per_master_regulator=number_of_conditions_per_master_regulator,
-                          tb.condition_treatments=tb.condition_treatments,
-                          tb.condition_tissues=tb.condition_tissues,
-                          df.transcriptionFactorAnnotation=df.transcriptionFactorAnnotation, 
-                          df.geneGroups=df.geneGroups,
-                          tb.geneGroups=tb.geneGroups,
-                          v.geneGroups=v.geneGroups,
-                          l.geneGroups=l.geneGroups,
+format_results = function(l.grn_subnetworks,
+                          tb.condition_tissue_differentialExpression,
+                          l.Hierarchy, 
+                          l.Hierarchy_tfs_per_tier,
+                          l.Hierarchy_nb_tfs_per_tier,
+                          l.df.masterRegulatorHierarchy,
+                          v.number_tiers,
+                          m.MR_vs_conditions,  # A) TFs versus Conditions (Matrix plot) P(TF,C)
+                          l.MR_vs_geneGroups_given_condition,  # B) per condition - TFs versus Domains (P(TF,D|C)) => also cumulative plot 
+                          number_of_conditions_per_master_regulator,
+                          tb.condition_treatments,
+                          tb.condition_tissues,
+                          df.transcriptionFactorAnnotation, 
+                          df.geneGroups,
+                          tb.geneGroups,
+                          v.geneGroups,
+                          l.geneGroups,
                           th.pval = 0.05,
                           foldername.results = "results/"){
   

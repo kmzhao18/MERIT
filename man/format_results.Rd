@@ -4,22 +4,15 @@
 \alias{format_results}
 \title{format_results}
 \usage{
-format_results(l.grn_subnetworks = l.grn_subnetworks,
-  tb.condition_tissue_differentialExpression = tb.condition_tissue_differentialExpression,
-  l.Hierarchy = l.Hierarchy,
-  l.Hierarchy_tfs_per_tier = l.Hierarchy_tfs_per_tier,
-  l.Hierarchy_nb_tfs_per_tier = l.Hierarchy_nb_tfs_per_tier,
-  l.df.masterRegulatorHierarchy = l.df.masterRegulatorHierarchy,
-  v.number_tiers = v.number_tiers,
-  m.MR_vs_conditions = m.MR_vs_conditions,
-  l.MR_vs_geneGroups_given_condition = l.MR_vs_geneGroups_given_condition,
-  number_of_conditions_per_master_regulator = number_of_conditions_per_master_regulator,
-  tb.condition_treatments = tb.condition_treatments,
-  tb.condition_tissues = tb.condition_tissues,
-  df.transcriptionFactorAnnotation = df.transcriptionFactorAnnotation,
-  df.geneGroups = df.geneGroups, tb.geneGroups = tb.geneGroups,
-  v.geneGroups = v.geneGroups, l.geneGroups = l.geneGroups,
-  th.pval = 0.05, foldername.results = "results/")
+format_results(l.grn_subnetworks,
+  tb.condition_tissue_differentialExpression, l.Hierarchy,
+  l.Hierarchy_tfs_per_tier, l.Hierarchy_nb_tfs_per_tier,
+  l.df.masterRegulatorHierarchy, v.number_tiers, m.MR_vs_conditions,
+  l.MR_vs_geneGroups_given_condition,
+  number_of_conditions_per_master_regulator, tb.condition_treatments,
+  tb.condition_tissues, df.transcriptionFactorAnnotation, df.geneGroups,
+  tb.geneGroups, v.geneGroups, l.geneGroups, th.pval = 0.05,
+  foldername.results = "results/")
 }
 \description{
 This function formats all results

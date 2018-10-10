@@ -5,9 +5,8 @@
 \title{Step 1 - Gene regulatory network inference using ensemble regression with Monte Carlo based threshold selection}
 \usage{
 
-  compute_ensemble_regression_with_montecarlo_based_stability_selection(m.foldChange_differentialExpression = l.data$m.foldChange_differentialExpression,
-  df.transcriptionFactorAnnotation = l.data$df.transcriptionFactorAnnotation,
-  df.geneGroups = df.geneGroups, seed = 1234,
+  compute_ensemble_regression_with_montecarlo_based_stability_selection(m.foldChange_differentialExpression,
+  df.transcriptionFactorAnnotation, df.geneGroups, seed = 1234,
   importance.measure = "impurity", n.trees = 1000,
   n.lead_method_expression_shuffling = 3, n.bootstrap = 100,
   n.stepsLARS = 5, n.cpus = 5)
