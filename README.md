@@ -147,6 +147,12 @@ l.results = run_MERIT(b.load_grn_inference = "yes",
 
 Next evaluate and store the results
 ```
+
+l.res.grn = l.results$l.res.grn, 
+l.res.grn_tfbs = l.results$l.res.grn_tfbs, 
+l.res.link_annotation = l.results$l.res.link_annotation,
+l.res.MR_hierarchy = l.results$l.res.MR_hierarchy
+
 format_results(l.grn_subnetworks = l.res.link_annotation$l.grn_subnetworks,
                tb.condition_tissue_differentialExpression = l.res.link_annotation$tb.condition_tissue_differentialExpression,
                l.Hierarchy=l.res.MR_hierarchy$l.Hierarchy, 
