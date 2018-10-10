@@ -98,8 +98,8 @@ MERIT Parameter sets:
 * `nbootstrap` (default = 100)
 * `nstepsLARS` (default = 5)
 
-* `foldername.tmp` temp file folder name (default = /tmp)
-* `foldername.results` results file folder name (default = /results)
+* `foldername.tmp` temp file folder name (default = tmp/)
+* `foldername.results` results file folder name (default = results/)
 
 ```
 l.results = run_MERIT(b.load_grn_inference = "yes",
