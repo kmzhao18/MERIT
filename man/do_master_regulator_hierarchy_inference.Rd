@@ -2,7 +2,7 @@
 % Please edit documentation in R/MERIT_functions.R
 \name{do_master_regulator_hierarchy_inference}
 \alias{do_master_regulator_hierarchy_inference}
-\title{run algorithm}
+\title{Step 4 - Master regulator hierarchy inference}
 \usage{
 do_master_regulator_hierarchy_inference(m.grn = m.grn,
   l.grn_subnetworks = l.grn_subnetworks,
@@ -23,5 +23,5 @@ do_master_regulator_hierarchy_inference(m.grn = m.grn,
 \item{th.pval}{= 0.05}
 }
 \description{
-This function loads a datasets
+This function identifies the master regulator hierarchy
 }

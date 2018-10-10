@@ -6,19 +6,17 @@
 \usage{
 run_MERIT(b.load_grn_inference = "yes", b.load_TFBS_inference = "yes",
   b.load_treatment_tissue_inference = "yes",
-  m.foldChange_differentialExpression = l.data$m.foldChange_differentialExpression,
-  m.pvalue_differentialExpression = l.data$m.pvalue_differentialExpression,
-  df.experiment_condition_annotation = l.data$df.experiment_condition_annotation,
-  tb.condition_treatments = l.data$tb.condition_treatments,
-  tb.condition_tissues = l.data$tb.condition_tissues,
-  df.transcriptionFactorAnnotation = l.data$df.transcriptionFactorAnnotation,
-  df.geneGroups = l.data$df.geneGroups,
-  tb.geneGroups = l.data$tb.geneGroups,
-  v.geneGroups = l.data$v.geneGroups,
-  l.geneGroups = l.data$l.geneGroups, n.cpus = 3, seed = 1234,
-  importance.measure = "impurity", ntrees = 1000,
-  n.lead_method_expression_shuffling = 3, n.bootstrap = 100,
-  n.stepsLARS = 5, th.lead_grn_method = 0.95,
+  m.foldChange_differentialExpression = m.foldChange_differentialExpression,
+  m.pvalue_differentialExpression = m.pvalue_differentialExpression,
+  df.experiment_condition_annotation = df.experiment_condition_annotation,
+  tb.condition_treatments = tb.condition_treatments,
+  tb.condition_tissues = tb.condition_tissues,
+  df.transcriptionFactorAnnotation = df.transcriptionFactorAnnotation,
+  df.geneGroups = df.geneGroups, tb.geneGroups = tb.geneGroups,
+  v.geneGroups = v.geneGroups, l.geneGroups = l.geneGroups,
+  n.cpus = 3, seed = 1234, importance.measure = "impurity",
+  ntrees = 1000, n.lead_method_expression_shuffling = 3,
+  n.bootstrap = 100, n.stepsLARS = 5, th.lead_grn_method = 0.95,
   th.support_grn_methods = 0.95, n.grnSupport = 1,
   file.TF_to_Motif_IDs = "data/TF_to_Motif_IDs.txt",
   file.TFBS_motifs = "data/Transcription_factor_weight_matrix_Arabidopsis_thaliana.txt",
@@ -34,69 +32,67 @@ run_MERIT(b.load_grn_inference = "yes", b.load_TFBS_inference = "yes",
   foldername.results = "results/")
 }
 \arguments{
-\item{b.load_grn_inference}{= "yes",}
+\item{b.load_grn_inference}{("yes","no")}
 
-\item{b.load_TFBS_inference}{= "yes",}
+\item{b.load_TFBS_inference}{"yes","no")}
 
-\item{b.load_treatment_tissue_inference}{= "yes",}
+\item{b.load_treatment_tissue_inference}{("yes","no")}
 
 \item{df.transcriptionFactorAnnotation}{}
 
-\item{n.cpus}{= 3,}
+\item{seed}{(default = 1234)}
 
-\item{seed}{=1234,}
+\item{importance.measure}{(default = "impurity")}
 
-\item{importance.measure}{="impurity",}
+\item{ntrees}{(default  = 1000)}
 
-\item{ntrees}{=1000,}
+\item{n.lead_method_expression_shuffling}{(default  = 3)}
 
-\item{n.lead_method_expression_shuffling}{= 3,}
+\item{th.lead_grn_method}{(default = 0.95)}
 
-\item{th.lead_grn_method}{(default = 0.95,}
+\item{th.support_grn_methods}{(default = 0.95)}
 
-\item{th.support_grn_methods}{(default = 0.95,}
+\item{n.grnSupport}{(default = 1)}
 
-\item{n.grnSupport}{(default = 1,}
+\item{file.TF_to_Motif_IDs}{(default = "data/TF_to_Motif_IDs.txt")}
 
-\item{file.TF_to_Motif_IDs}{(default = "data/TF_to_Motif_IDs.txt",}
+\item{file.TFBS_motifs}{(default = "data/Transcription_factor_weight_matrix_Arabidopsis_thaliana.txt")}
 
-\item{file.TFBS_motifs}{(default = "data/Transcription_factor_weight_matrix_Arabidopsis_thaliana.txt",}
+\item{file.promoterSeq}{(default = "data/TAIR10_upstream_1000_20101104.txt")}
 
-\item{file.promoterSeq}{(default = "data/TAIR10_upstream_1000_20101104.txt",}
+\item{file.geneSeq}{(default = "data/TAIR10_seq_20110103_representative_gene_model_updated.txt")}
 
-\item{file.geneSeq}{(default = "data/TAIR10_seq_20110103_representative_gene_model_updated.txt",}
+\item{th.pre_tss}{(default= 1000)}
 
-\item{th.pre_tss}{(default= 1000,}
+\item{th.post_tss}{(default = 200)}
 
-\item{th.post_tss}{(default = 200,}
+\item{genome_nucleotide_distribution}{ACGT distribution (default = c(0.3253439, 0.1746561, 0.1746561, 0.3253439),}
 
-\item{genome_nucleotide_distribution}{(default = c(0.3253439, 0.1746561, 0.1746561, 0.3253439),}
+\item{th.pval.known_motifs}{(default = 0.05)}
 
-\item{th.pval.known_motifs}{(default = 0.05,}
+\item{th.diffexp}{(default = 0.05)}
 
-\item{th.diffexp}{(default = 0.05,}
-
-\item{th.pval.treatment}{(default = 0.05,}
+\item{th.pval.treatment}{(default = 0.05)}
 
 \item{th.pval.tissue}{(default= 0.05)}
 
 \item{th.min.samples}{(default = 1)}
 
-\item{s.multipleTestCorrection}{= "none",}
+\item{s.multipleTestCorrection}{(default = "none")}
 
-\item{th.min_number_targets}{= 2,}
+\item{th.min_number_targets}{(default = 2)}
 
-\item{th.min_number_MR_targets}{= 2,}
+\item{th.min_number_MR_targets}{(default = 2)}
 
-\item{th.pval_masterRegulator}{= 0.05,}
+\item{th.pval_masterRegulator}{(default = 0.05)}
 
-\item{foldername.tmp}{= "/tmp",}
+\item{foldername.tmp}{(default = "tmp/")}
 
-\item{foldername.results}{= "/results"}
+\item{foldername.results}{= (default = "results/")}
 
-\item{nbootstrap}{=100,}
+\item{nbootstrap}{(default = =100)}
 
-\item{nstepsLARS}{(default = 5,}
+\item{nstepsLARS}{(default = 5)}
 }
 \description{
 run algorithm

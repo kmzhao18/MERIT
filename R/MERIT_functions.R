@@ -1,7 +1,12 @@
 
 
 
-
+#' install dependencies
+#'
+#'
+#' @keywords 
+#' @export
+#' @examples
 install_and_load_libraries <- function(){
   
   # CRAN
@@ -19,7 +24,7 @@ install_and_load_libraries <- function(){
   
   
   library(TFBSTools)
-  library(BSgenome.Athaliana.TAIR.TAIR9)
+  # library(BSgenome.Athaliana.TAIR.TAIR9)
   
   library(networkD3)
   library(reshape2)
@@ -46,31 +51,30 @@ install_and_load_libraries <- function(){
 }
 
 
-run_comparative_evaluation <- function(m.lead_suppport.grn = m.lead_suppport.grn, 
-                                       m.rf_grn=m.rf_grn, 
-                                       m.lr_grn = m.lr_grn, 
-                                       m.clr_grn = m.clr_grn){
+run_comparative_evaluation <- function(){
   
+  n.min_hit_links = 5
   
+  #  df.transcriptionFactorAnnotation=l.data$df.transcriptionFactorAnnotation
+  #  df.geneGroups=l.data$df.geneGroups
+  #  tb.geneGroups=l.data$tb.geneGroups
+  #  v.geneGroups=l.data$v.geneGroups
+  #  l.geneGroups=l.data$l.geneGroups
+  #                                        
+  # m.rf_grn = l.res.grn$m.rf_grn
+  # m.lr_grn = l.res.grn$m.lr_grn
+  # m.clr_grn = l.res.grn$m.clr_grn
+  # m.MERIT_grn = l.res.link_annotation$m.grn * l.res.grn_tfbs$m.lead_suppport_w_motif.grn
+  # 
+  # 
+ 
   
   df.transcriptionFactorAnnotation = subset(df.transcriptionFactorAnnotation, df.transcriptionFactorAnnotation$with_geneExpression == "yes")
   df.geneGroups = subset(df.geneGroups, df.geneGroups$with_geneExpression == "yes")
   v.tfs = unique(df.transcriptionFactorAnnotation$TF_ID)
   v.genes =  unique(c(v.tfs, rownames(df.geneGroups)))
   
-  
-  
-  th.pval.known_motifs = 0.05
-  
-  m.motifNet = m.motifNet.pval
-  m.motifNet[m.motifNet > th.pval.known_motifs] <- 10
-  m.motifNet[m.motifNet <= th.pval.known_motifs] <- 1
-  m.motifNet[m.motifNet == 10] <- 0
-  #
-  tfs_w_motif_binding = intersect(rownames(m.motifNet), rownames(m.lead_suppport.grn))
-  tgs_w_motif_binding = intersect(colnames(m.motifNet), colnames(m.lead_suppport.grn))
-  m.lead_suppport_w_motif.grn <- m.motifNet[tfs_w_motif_binding, tgs_w_motif_binding] * m.lead_suppport.grn[tfs_w_motif_binding, tgs_w_motif_binding]
-  
+
   ####  
   
   df.ATRM <- read.table("A:/junkDNA.ai/MERIT/datasets/evaluation/Regulations_in_ATRM.txt", header = TRUE, sep = "\t", fill = TRUE, stringsAsFactors = FALSE)[,1:2]
@@ -224,13 +228,13 @@ run_comparative_evaluation <- function(m.lead_suppport.grn = m.lead_suppport.grn
   for(i in 1:length(l.gn.comparison)){
     tfs.i = rownames(l.gn.comparison[[i]])
     tgs.i = colnames(l.gn.comparison[[i]])
-    l.gn.comparison[[i]] = l.gn.comparison[[i]][intersect(rownames(m.lead_suppport_w_motif.grn), tfs.i), 
-                                                intersect(colnames(m.lead_suppport_w_motif.grn), tgs.i)]
+    l.gn.comparison[[i]] = l.gn.comparison[[i]][intersect(rownames(m.MERIT_grn), tfs.i), 
+                                                intersect(colnames(m.MERIT_grn), tgs.i)]
   }
   
   
   v.methods <- c("CNS2014", "CNS_PCC2014", "Vermeissen2014",  "Barah 2015 PCC", "Barah 2015 NCA",
-                 "Linear regression", "CLR", "Random Forest Regression", "Lead + Support", "MERIT")
+                 "Linear regression", "CLR", "Random Forest Regression", "MERIT")
   
   l.grn <- vector(mode = "list", length = length(v.methods))
   
@@ -243,25 +247,27 @@ run_comparative_evaluation <- function(m.lead_suppport.grn = m.lead_suppport.grn
   l.grn[[6]] = m.lr_grn
   l.grn[[7]] = m.clr_grn
   l.grn[[8]] = m.rf_grn
-  l.grn[[9]] = m.lead_suppport.grn
-  l.grn[[10]] = m.lead_suppport_w_motif.grn
+  l.grn[[9]] = m.MERIT_grn
+
+  names(l.grn) = v.methods
   
+  l.grn.selected = l.grn
   
   ####
-  
-  l.grn.selected <- vector(mode = "list", length = length(v.methods))
-  for(i in 1:length(l.grn.selected)){
-    
-    tgs = colnames(l.grn[[i]])
-    tgs = tgs[!tgs %in% ""]
-    
-    l.grn[[i]] = l.grn[[i]]  # [, intersect(tg.selection, tgs)]
-    l.grn.selected[[i]] <- l.grn[[i]] #[names(which(rowSums(l.grn[[i]]) > 0)), names(which(colSums(l.grn[[i]]) > 0))]#   * m.motifNet[names(which(rowSums(m.rf_w_treatments_w_motifs) > 0)), names(which(colSums(m.rf_w_treatments_w_motifs) > 0))]
-    # l.grn.selected[[i]] <- l.grn[[i]][intersect(rownames(l.grn[[i]]), rownames(m.AGRIS_ATRM)),intersect(colnames(l.grn[[i]]),colnames(m.AGRIS_ATRM))]  #[names(which(rowSums(m.rf_w_treatments_w_motifs) > 0)), names(which(colSums(m.rf_w_treatments_w_motifs) > 0))]
-    #l.grn.selected[[i]][l.grn.selected[[i]] > 0] <- 1
-  }
-  names(l.grn.selected) <- v.methods
-  
+  # 
+  # l.grn <- vector(mode = "list", length = length(v.methods))
+  # for(i in 1:length(l.grn.selected)){
+  #   
+  #   tgs = colnames(l.grn[[i]])
+  #   tgs = tgs[!tgs %in% ""]
+  #   
+  #   l.grn[[i]] = l.grn[[i]]  # [, intersect(tg.selection, tgs)]
+  #   l.grn.selected[[i]] <- l.grn[[i]] #[names(which(rowSums(l.grn[[i]]) > 0)), names(which(colSums(l.grn[[i]]) > 0))]#   * m.motifNet[names(which(rowSums(m.rf_w_treatments_w_motifs) > 0)), names(which(colSums(m.rf_w_treatments_w_motifs) > 0))]
+  #   # l.grn.selected[[i]] <- l.grn[[i]][intersect(rownames(l.grn[[i]]), rownames(m.AGRIS_ATRM)),intersect(colnames(l.grn[[i]]),colnames(m.AGRIS_ATRM))]  #[names(which(rowSums(m.rf_w_treatments_w_motifs) > 0)), names(which(colSums(m.rf_w_treatments_w_motifs) > 0))]
+  #   #l.grn.selected[[i]][l.grn.selected[[i]] > 0] <- 1
+  # }
+  # names(l.grn.selected) <- v.methods
+  # 
   
   df.comparativeEvaluation.total <- c()
   for(d in 1:length(l.gn.comparison)){
@@ -363,7 +369,7 @@ run_comparative_evaluation <- function(m.lead_suppport.grn = m.lead_suppport.grn
   
   
   
-  l.grn.selected <- l.grn.selected[c(2,3,4,6,7,8,9,10,11)]
+  l.grn.selected <- l.grn.selected[c(2,3,4,6,7,8,9)]
   v.methods = names(l.grn.selected)
   
   dataset <- c()
@@ -434,7 +440,7 @@ run_comparative_evaluation <- function(m.lead_suppport.grn = m.lead_suppport.grn
     
     n_hits.selection = n_hits[idx]
     v.methods.selection = v.methods[idx]
-    v.colors <- c("cyan", "green", "blue", "pink", "yellow", "gray", "orange", "darkred")
+    v.colors <- c( "green", "blue", "pink", "yellow", "gray", "orange", "darkred")
     names(v.colors) <- v.methods
     
     v.colors.selection = c("black", v.colors[idx])
@@ -789,9 +795,9 @@ compute_linearRegressionWithStabilitySelection_based_GRN <- function(mat.express
 
 
 
-#' run algorithm 
+#' Step 1 - Gene regulatory network inference using ensemble regression with Monte Carlo based threshold selection
 #'
-#' This function loads a datasets
+#' 
 #' @param mat.expression
 #' @param k (default k="sqrt")
 #' @param nb.trees
@@ -921,9 +927,9 @@ compute_ensemble_regression_with_montecarlo_based_stability_selection <- functio
 
 
 
-#' run algorithm 
+#' load grns
 #'
-#' This function loads a datasets 
+#' This function loads a computed grns 
 #' @param df.transcriptionFactorAnnotation =l.data$df.transcriptionFactorAnnotation,
 #' @param df.geneGroups = v.genes, 
 #' @param th.lead_grn_method = 0.95,
@@ -932,7 +938,7 @@ compute_ensemble_regression_with_montecarlo_based_stability_selection <- functio
 #' @param ngrnSupport = 1
 #' @keywords 
 #' @export
-load_lead_support_grn <- function(df.transcriptionFactorAnnotation=l.data$df.transcriptionFactorAnnotation,
+load_lead_support_grn <- function(df.transcriptionFactorAnnotation=df.transcriptionFactorAnnotation,
                                    df.geneGroups = df.geneGroups, 
                                    th.lead_grn_method = 0.95,
                                    n.lead_method_expression_shuffling = 3,
@@ -1152,9 +1158,9 @@ load_datasets = function(filename.genes = "data/genes.txt",
 
 
 
-#' Load dependency function
+#' Step 2 - Transcription factor direct target promoter binding based filtering of gene regulatory link predictions
 #'
-#' This function installs or loads dependencies needed
+#' 
 #' @param m.grn gene regulatory network 
 #' @keywords 
 #' @export
@@ -1754,9 +1760,9 @@ perform_treatment_and_tissue_filtering <- function(m.grn = m.grn,
 
 
 
-#' run algorithm 
+#' Step 3 - Context specific annotation and filtering of gene regulatory link predictions
 #'
-#' This function loads a datasets
+#' This function filter... 
 #' @param m.grn = m.grn,
 #' @param l.grn_subnetworks = l.grn_subnetworks, 
 #' @param df.geneGroups,
@@ -2202,9 +2208,9 @@ identify_regulatory_hierachy = function(m.MR_vs_conditions,
 
 
 
-#' run algorithm 
+#' Step 4 - Master regulator hierarchy inference
 #'
-#' This function loads a datasets
+#' This function identifies the master regulator hierarchy
 #' @param m.grn = m.grn,
 #' @param l.grn_subnetworks = l.grn_subnetworks, 
 #' @param df.geneGroups,
@@ -2242,7 +2248,7 @@ do_master_regulator_hierarchy_inference = function(m.grn = m.grn,
   }
    
     
-  message("Identify bottom tier master regulators")
+  message("----- Identify bottom tier master regulators -----")
   
   # identify level 1 master regulators (bottom level - tfs x domains)
   l.res.MR <- identify_bottom_tier_masterRegulators(m.grn,
@@ -2266,7 +2272,7 @@ do_master_regulator_hierarchy_inference = function(m.grn = m.grn,
   number_of_conditions_per_master_regulator = rowSums(m.MR_vs_conditions)
   
   
-  message("analysis of gene regulatory hierarchy")
+  message("----- Infer master regulator regulatory hierarchy -----")
   
   l.Hierarchy = vector(mode = "list", length = 2)
   l.Hierarchy_tfs_per_tier = vector(mode = "list", length = 2)
@@ -2334,8 +2340,7 @@ do_master_regulator_hierarchy_inference = function(m.grn = m.grn,
   if(!file.exists(paste(foldername.results, "geneGroups_masterRegulatorHierarchies/", sep = ""))){
     dir.create(paste(foldername.results, "geneGroups_masterRegulatorHierarchies/", sep = ""))
   }
-  
-  message("Generate gene group network hierarchy")
+
   s = 2
   for(i in 1:length(v.number_tiers[[s]])){
     
@@ -2403,15 +2408,19 @@ do_master_regulator_hierarchy_inference = function(m.grn = m.grn,
               l.Hierarchy_nb_tfs_per_tier=l.Hierarchy_nb_tfs_per_tier,
               l.df.masterRegulatorHierarchy=l.df.masterRegulatorHierarchy,
               v.number_tiers=v.number_tiers,
-              m.MR_vs_conditions <- l.res.MR$m.MR_vs_conditions,  # A) TFs versus Conditions (Matrix plot) P(TF,C)
-              l.MR_vs_geneGroups_given_condition <- l.res.MR$l.MR_vs_geneGroups_given_condition,  # B) per condition - TFs versus Domains (P(TF,D|C)) => also cumulative plot 
+              m.MR_vs_conditions = l.res.MR$m.MR_vs_conditions,  # A) TFs versus Conditions (Matrix plot) P(TF,C)
+              l.MR_vs_geneGroups_given_condition = l.res.MR$l.MR_vs_geneGroups_given_condition,  # B) per condition - TFs versus Domains (P(TF,D|C)) => also cumulative plot 
               number_of_conditions_per_master_regulator=number_of_conditions_per_master_regulator))
   
 }
 
 
 
-
+#' format_results
+#'
+#' This function formats all results
+#' @keywords 
+#' @export
 format_results = function(l.grn_subnetworks = l.grn_subnetworks,
                           tb.condition_tissue_differentialExpression = tb.condition_tissue_differentialExpression,
                           l.Hierarchy=l.Hierarchy, 
@@ -2422,8 +2431,14 @@ format_results = function(l.grn_subnetworks = l.grn_subnetworks,
                           m.MR_vs_conditions = m.MR_vs_conditions,  # A) TFs versus Conditions (Matrix plot) P(TF,C)
                           l.MR_vs_geneGroups_given_condition = l.MR_vs_geneGroups_given_condition,  # B) per condition - TFs versus Domains (P(TF,D|C)) => also cumulative plot 
                           number_of_conditions_per_master_regulator=number_of_conditions_per_master_regulator,
-                          df.transcriptionFactorAnnotation, 
-                          df.geneGroups,
+                          tb.condition_treatments=tb.condition_treatments,
+                          tb.condition_tissues=tb.condition_tissues,
+                          df.transcriptionFactorAnnotation=df.transcriptionFactorAnnotation, 
+                          df.geneGroups=df.geneGroups,
+                          tb.geneGroups=tb.geneGroups,
+                          v.geneGroups=v.geneGroups,
+                          l.geneGroups=l.geneGroups,
+                          th.pval = 0.05,
                           foldername.results = "results/"){
   
   df.transcriptionFactorAnnotation = subset(df.transcriptionFactorAnnotation, df.transcriptionFactorAnnotation$with_geneExpression == "yes")
@@ -2454,8 +2469,6 @@ format_results = function(l.grn_subnetworks = l.grn_subnetworks,
   dev.off()
   
   ### 
-  
-  message("transcription factor family specificity")
   
   v.fams <- unique(v.tf_families)
   df.data <- data.frame(TF = character(), Fam = character(), Cond = character())
@@ -2542,9 +2555,7 @@ format_results = function(l.grn_subnetworks = l.grn_subnetworks,
     
     v.MRs = rownames(m.MR_vs_conditions)
     v.Conds = colnames(m.MR_vs_conditions)
-    
-    message("Store condition specific gene group master regulators")
-    
+
     m.MR_vs_geneGroups_across_conditions <- matrix(0, nrow = length(v.MRs), ncol = length(v.geneGroups), dimnames = list(v.MRs, v.geneGroups))
     for(i in 1:length(v.Conds)){
       m.heatmap <- l.MR_vs_geneGroups_given_condition[v.Conds[i]][[1]]
@@ -2594,8 +2605,6 @@ format_results = function(l.grn_subnetworks = l.grn_subnetworks,
 
 
   if(TRUE){
-  
-    message("families versus gene groups")
   
     v.tf.fams.selection = unique(v.tf_families[rownames(m.MR_vs_geneGroups_across_conditions)])
     l.fams_vs_geneGroups = vector(mode = "list", length = 3)
@@ -2678,8 +2687,7 @@ format_results = function(l.grn_subnetworks = l.grn_subnetworks,
     dev.off()
     
     
-    message("families versus conditions")
-    
+   
     v.tf.fams.selection = unique(v.tf_families[rownames(m.MR_vs_conditions)])
     v.conds.selection = colnames(m.MR_vs_conditions)
   
@@ -2761,8 +2769,6 @@ format_results = function(l.grn_subnetworks = l.grn_subnetworks,
     dev.off()
     
   
-    message("gene groups versus conditions")
-    
     tb.geneGroup_activity = rep(0, length(v.geneGroups))
     names(tb.geneGroup_activity) = v.geneGroups
     
@@ -3032,9 +3038,9 @@ format_results = function(l.grn_subnetworks = l.grn_subnetworks,
 
 #' run algorithm 
 #'
-#' @param b.load_grn_inference = "yes",
-#' @param b.load_TFBS_inference = "yes",
-#' @param b.load_treatment_tissue_inference = "yes",
+#' @param b.load_grn_inference ("yes","no")
+#' @param b.load_TFBS_inference "yes","no")
+#' @param b.load_treatment_tissue_inference ("yes","no")
 #' @param m.foldChange_differentialExpression
 #' @param m.pvalue_differentialExpression
 #' @param df.experiment_condition_annotation
@@ -3045,34 +3051,34 @@ format_results = function(l.grn_subnetworks = l.grn_subnetworks,
 #' @param tb.geneGroups
 #' @param v.geneGroups
 #' @param l.geneGroups
-#' @param n.cpus = 3,
-#' @param seed =1234,
-#' @param importance.measure  ="impurity",
-#' @param ntrees =1000,
-#' @param n.lead_method_expression_shuffling = 3,
-#' @param nbootstrap =100,
-#' @param nstepsLARS (default = 5,
-#' @param th.lead_grn_method (default = 0.95,
-#' @param th.support_grn_methods (default = 0.95,
-#' @param n.grnSupport (default = 1,
-#' @param file.TF_to_Motif_IDs (default = "data/TF_to_Motif_IDs.txt",
-#' @param file.TFBS_motifs (default = "data/Transcription_factor_weight_matrix_Arabidopsis_thaliana.txt",
-#' @param file.promoterSeq (default = "data/TAIR10_upstream_1000_20101104.txt",
-#' @param file.geneSeq (default = "data/TAIR10_seq_20110103_representative_gene_model_updated.txt",
-#' @param th.pre_tss (default= 1000,
-#' @param th.post_tss (default = 200,
-#' @param genome_nucleotide_distribution (default = c(0.3253439, 0.1746561, 0.1746561, 0.3253439),
-#' @param th.pval.known_motifs (default = 0.05,
-#' @param th.diffexp (default = 0.05,
-#' @param th.pval.treatment (default = 0.05, 
+#' @param n.cpus
+#' @param seed (default = 1234)
+#' @param importance.measure  (default = "impurity")
+#' @param ntrees (default  = 1000)
+#' @param n.lead_method_expression_shuffling (default  = 3)
+#' @param nbootstrap (default = =100)
+#' @param nstepsLARS (default = 5)
+#' @param th.lead_grn_method (default = 0.95)
+#' @param th.support_grn_methods (default = 0.95)
+#' @param n.grnSupport (default = 1)
+#' @param file.TF_to_Motif_IDs (default = "data/TF_to_Motif_IDs.txt")
+#' @param file.TFBS_motifs (default = "data/Transcription_factor_weight_matrix_Arabidopsis_thaliana.txt")
+#' @param file.promoterSeq (default = "data/TAIR10_upstream_1000_20101104.txt")
+#' @param file.geneSeq (default = "data/TAIR10_seq_20110103_representative_gene_model_updated.txt")
+#' @param th.pre_tss (default= 1000)
+#' @param th.post_tss (default = 200)
+#' @param genome_nucleotide_distribution ACGT distribution (default = c(0.3253439, 0.1746561, 0.1746561, 0.3253439),
+#' @param th.pval.known_motifs (default = 0.05)
+#' @param th.diffexp (default = 0.05)
+#' @param th.pval.treatment (default = 0.05) 
 #' @param th.pval.tissue (default= 0.05)
 #' @param th.min.samples (default = 1) 
-#' @param s.multipleTestCorrection = "none",
-#' @param th.min_number_targets = 2,
-#' @param th.min_number_MR_targets = 2,
-#' @param th.pval_masterRegulator = 0.05, 
-#' @param foldername.tmp = "/tmp", 
-#' @param foldername.results = "/results"
+#' @param s.multipleTestCorrection (default = "none")
+#' @param th.min_number_targets (default = 2)
+#' @param th.min_number_MR_targets (default = 2)
+#' @param th.pval_masterRegulator (default = 0.05)
+#' @param foldername.tmp (default = "tmp/") 
+#' @param foldername.results = (default = "results/")
 
 #' @keywords 
 #' @export
@@ -3160,16 +3166,16 @@ format_results = function(l.grn_subnetworks = l.grn_subnetworks,
 run_MERIT <- function(b.load_grn_inference = "yes",
                       b.load_TFBS_inference = "yes",
                       b.load_treatment_tissue_inference = "yes",
-                      m.foldChange_differentialExpression=l.data$m.foldChange_differentialExpression,
-                      m.pvalue_differentialExpression=l.data$m.pvalue_differentialExpression,
-                      df.experiment_condition_annotation=l.data$df.experiment_condition_annotation,
-                      tb.condition_treatments=l.data$tb.condition_treatments,
-                      tb.condition_tissues=l.data$tb.condition_tissues,
-                      df.transcriptionFactorAnnotation=l.data$df.transcriptionFactorAnnotation, 
-                      df.geneGroups=l.data$df.geneGroups,
-                      tb.geneGroups=l.data$tb.geneGroups,
-                      v.geneGroups=l.data$v.geneGroups,
-                      l.geneGroups=l.data$l.geneGroups, 
+                      m.foldChange_differentialExpression=m.foldChange_differentialExpression,
+                      m.pvalue_differentialExpression=m.pvalue_differentialExpression,
+                      df.experiment_condition_annotation=df.experiment_condition_annotation,
+                      tb.condition_treatments=tb.condition_treatments,
+                      tb.condition_tissues=tb.condition_tissues,
+                      df.transcriptionFactorAnnotation=df.transcriptionFactorAnnotation, 
+                      df.geneGroups=df.geneGroups,
+                      tb.geneGroups=tb.geneGroups,
+                      v.geneGroups=v.geneGroups,
+                      l.geneGroups=l.geneGroups, 
                       n.cpus = 3,
                       seed=1234,
                       importance.measure="impurity",
@@ -3209,9 +3215,8 @@ run_MERIT <- function(b.load_grn_inference = "yes",
     dir.create(foldername.results)
   }
   
+  message("--------------------------------------------------")
   message("Step 1 - Gene regulatory network inference using ensemble regression with Monte Carlo based threshold selection")
-
-  l.res.MR_hierarchy = l.results$l.res.MR_hierarchy
   
   if(b.load_grn_inference == "no"){
     
@@ -3228,7 +3233,7 @@ run_MERIT <- function(b.load_grn_inference = "yes",
     
   }
   
-  l.res.grn = load_lead_support_grn(df.transcriptionFactorAnnotation=l.data$df.transcriptionFactorAnnotation,
+  l.res.grn = load_lead_support_grn(df.transcriptionFactorAnnotation=df.transcriptionFactorAnnotation,
                                     df.geneGroups = df.geneGroups, 
                                     th.lead_grn_method = th.lead_grn_method,
                                     n.lead_method_expression_shuffling = n.lead_method_expression_shuffling,
@@ -3236,6 +3241,9 @@ run_MERIT <- function(b.load_grn_inference = "yes",
                                     n.grnSupport = n.grnSupport)            
   
   
+
+  message("")
+  message("--------------------------------------------------")
   message("Step 2 - Transcription factor direct target promoter binding based filtering of gene regulatory link predictions")
   
   l.res.grn_tfbs = transcriptionFactorBindingInference(m.grn = l.res.grn$m.lead_suppport.grn , 
@@ -3250,8 +3258,9 @@ run_MERIT <- function(b.load_grn_inference = "yes",
                                                        n.cpus = n.cpus,
                                                        b.load = b.load_TFBS_inference)
   
-  
-  message("Step3 - Context specific annotation and filtering of gene regulatory link predictions")
+  message("")
+  message("--------------------------------------------------")
+  message("Step 3 - Context specific annotation and filtering of gene regulatory link predictions")
   
   l.res.link_annotation = annotate_links_with_treatments_and_tissues(m.lead_support_w_motif.grn=l.res.tfbs$m.lead_suppport_w_motif.grn, 
                                                                      m.pvalue_differentialExpression=m.pvalue_differentialExpression,
@@ -3265,8 +3274,10 @@ run_MERIT <- function(b.load_grn_inference = "yes",
                                                                      s.multipleTestCorrection = "none",
                                                                      b.load = b.load_treatment_tissue_inference)
   
-  
+  message("")
+  message("--------------------------------------------------")
   message("Step 4 - Master regulator hierarchy inference")
+  message("")
   
   l.res.MR_hierarchy = do_master_regulator_hierarchy_inference(m.grn = l.res.link_annotation$m.grn,
                                                                l.grn_subnetworks = l.res.link_annotation$l.grn_subnetworks, 
@@ -3280,8 +3291,8 @@ run_MERIT <- function(b.load_grn_inference = "yes",
                                                                th.pval = th.pval_masterRegulator, 
                                                                foldername.results = foldername.results)
   
-  
 
+  message("--------------------------------------------------")
   return(list(l.res.grn = l.res.grn, 
               l.res.grn_tfbs = l.res.grn_tfbs, 
               l.res.link_annotation = l.res.link_annotation,

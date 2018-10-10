@@ -2,7 +2,7 @@
 % Please edit documentation in R/MERIT_functions.R
 \name{compute_ensemble_regression_with_montecarlo_based_stability_selection}
 \alias{compute_ensemble_regression_with_montecarlo_based_stability_selection}
-\title{run algorithm}
+\title{Step 1 - Gene regulatory network inference using ensemble regression with Monte Carlo based threshold selection}
 \usage{
 
   compute_ensemble_regression_with_montecarlo_based_stability_selection(m.foldChange_differentialExpression = l.data$m.foldChange_differentialExpression,
@@ -16,5 +16,5 @@
 \item{k}{(default k="sqrt")}
 }
 \description{
-This function loads a datasets
+Step 1 - Gene regulatory network inference using ensemble regression with Monte Carlo based threshold selection
 }

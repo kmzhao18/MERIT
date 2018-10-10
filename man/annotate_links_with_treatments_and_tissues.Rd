@@ -2,7 +2,7 @@
 % Please edit documentation in R/MERIT_functions.R
 \name{annotate_links_with_treatments_and_tissues}
 \alias{annotate_links_with_treatments_and_tissues}
-\title{run algorithm}
+\title{Step 3 - Context specific annotation and filtering of gene regulatory link predictions}
 \usage{
 
   annotate_links_with_treatments_and_tissues(m.lead_support_w_motif.grn = m.lead_suppport_w_motif.grn,
@@ -28,5 +28,5 @@
 \item{th.pval}{= 0.05}
 }
 \description{
-This function loads a datasets
+This function filter...
 }

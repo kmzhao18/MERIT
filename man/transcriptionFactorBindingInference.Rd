@@ -2,7 +2,7 @@
 % Please edit documentation in R/MERIT_functions.R
 \name{transcriptionFactorBindingInference}
 \alias{transcriptionFactorBindingInference}
-\title{Load dependency function}
+\title{Step 2 - Transcription factor direct target promoter binding based filtering of gene regulatory link predictions}
 \usage{
 transcriptionFactorBindingInference(m.grn = m.lead_suppport.grn,
   file.TF_to_Motif_IDs = "", file.TFBS_motifs = "",
@@ -15,7 +15,7 @@ transcriptionFactorBindingInference(m.grn = m.lead_suppport.grn,
 \item{m.grn}{gene regulatory network}
 }
 \description{
-This function installs or loads dependencies needed
+Step 2 - Transcription factor direct target promoter binding based filtering of gene regulatory link predictions
 }
 \examples{
 install_and_load_libraries()

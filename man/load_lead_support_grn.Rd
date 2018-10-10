@@ -2,10 +2,10 @@
 % Please edit documentation in R/MERIT_functions.R
 \name{load_lead_support_grn}
 \alias{load_lead_support_grn}
-\title{run algorithm}
+\title{load grns}
 \usage{
 
-  load_lead_support_grn(df.transcriptionFactorAnnotation = l.data$df.transcriptionFactorAnnotation,
+  load_lead_support_grn(df.transcriptionFactorAnnotation = df.transcriptionFactorAnnotation,
   df.geneGroups = df.geneGroups, th.lead_grn_method = 0.95,
   n.lead_method_expression_shuffling = 3,
   th.support_grn_methods = 0.95, n.grnSupport = 1)
@@ -24,5 +24,5 @@
 \item{ngrnSupport}{= 1}
 }
 \description{
-This function loads a datasets
+This function loads a computed grns
 }
