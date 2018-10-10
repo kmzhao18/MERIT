@@ -105,23 +105,23 @@ MERIT Parameter sets:
 l.results = run_MERIT(b.load_grn_inference = "yes",
                       b.load_TFBS_inference = "yes",
                       b.load_treatment_tissue_inference = "yes",
-                      m.foldChange_differentialExpression = l.data$m.foldChange_differentialExpression,
-                      m.pvalue_differentialExpression = l.data$m.pvalue_differentialExpression,
-                      df.experiment_condition_annotation = l.data$df.experiment_condition_annotation,
-                      tb.condition_treatments = l.data$tb.condition_treatments,
-                      tb.condition_tissues = l.data$tb.condition_tissues,
-                      df.transcriptionFactorAnnotation = l.data$df.transcriptionFactorAnnotation, 
-                      df.geneGroups = l.data$df.geneGroups,
-                      tb.geneGroups = l.data$tb.geneGroups,
-                      v.geneGroups = l.data$v.geneGroups,
-                      l.geneGroups = l.data$l.geneGroups, 
+                      m.foldChange_differentialExpression=l.data$m.foldChange_differentialExpression,
+                      m.pvalue_differentialExpression=l.data$m.pvalue_differentialExpression,
+                      df.experiment_condition_annotation=l.data$df.experiment_condition_annotation,
+                      tb.condition_treatments=l.data$tb.condition_treatments,
+                      tb.condition_tissues=l.data$tb.condition_tissues,
+                      df.transcriptionFactorAnnotation=l.data$df.transcriptionFactorAnnotation, 
+                      df.geneGroups=l.data$df.geneGroups,
+                      tb.geneGroups=l.data$tb.geneGroups,
+                      v.geneGroups=l.data$v.geneGroups,
+                      l.geneGroups=l.data$l.geneGroups, 
                       n.cpus = 3,
-                      seed = 1234,
-                      importance.measure = "impurity",
-                      ntrees = 1000,
+                      seed=1234,
+                      importance.measure="impurity",
+                      ntrees=1000,
                       n.lead_method_expression_shuffling = 3,
-                      nbootstrap = 100,
-                      nstepsLARS = 5,
+                      n.bootstrap=100,
+                      n.stepsLARS=5,
                       th.lead_grn_method = 0.95,
                       th.support_grn_methods = 0.95,
                       n.grnSupport = 1,
@@ -141,16 +141,26 @@ l.results = run_MERIT(b.load_grn_inference = "yes",
                       th.min_number_targets = 2,
                       th.min_number_MR_targets = 2,
                       th.pval_masterRegulator = 0.05, 
-                      foldername.tmp = "/tmp", 
-                      foldername.results = "/results")
+                      foldername.tmp = "tmp/", 
+                      foldername.results = "results/")
 ```
 
 Next evaluate and store the results
 ```
-print(head(l.results$df.cluster_annotations))
-evaluate_and_store_results(df.cluster_annotations=l.results$df.cluster_annotations,
-                           m.functionality=l.results$m.functionality, 
-                           foldername.results = "results/")
+format_results(l.grn_subnetworks = l.res.link_annotation$l.grn_subnetworks,
+               tb.condition_tissue_differentialExpression = l.res.link_annotation$tb.condition_tissue_differentialExpression,
+               l.Hierarchy=l.res.MR_hierarchy$l.Hierarchy, 
+               l.Hierarchy_tfs_per_tier=l.res.MR_hierarchy$l.Hierarchy_tfs_per_tier,
+               l.Hierarchy_nb_tfs_per_tier=l.res.MR_hierarchy$l.Hierarchy_nb_tfs_per_tier,
+               l.df.masterRegulatorHierarchy=l.res.MR_hierarchy$l.df.masterRegulatorHierarchy,
+               v.number_tiers=l.res.MR_hierarchy$v.number_tiers,
+               m.MR_vs_conditions = l.res.MR_hierarchy$m.MR_vs_conditions,  
+               l.MR_vs_geneGroups_given_condition = l.res.MR_hierarchy$l.MR_vs_geneGroups_given_condition,
+               number_of_conditions_per_master_regulator=l.res.MR_hierarchy$number_of_conditions_per_master_regulator,
+               df.transcriptionFactorAnnotation = l.data$df.transcriptionFactorAnnotation,
+               df.geneGroups = l.data$df.geneGroups,
+               foldername.results = "results/")
+
 ```
 
 
