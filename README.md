@@ -148,10 +148,19 @@ l.results = run_MERIT(b.load_grn_inference = "yes",
 Next evaluate and store the results
 ```
 
+# Results
+# Step 1 - Gene regulatory network inference using ensemble regression with Monte Carlo based threshold selection 
 l.res.grn = l.results$l.res.grn, 
+
+# Step 2 - Transcription factor direct target promoter binding based filtering of gene regulatory link predictions
 l.res.grn_tfbs = l.results$l.res.grn_tfbs, 
+
+# Step3 - Context specific annotation and filtering of gene regulatory link predictions
 l.res.link_annotation = l.results$l.res.link_annotation,
+
+# Step 4 - Master regulator hierarchy inference
 l.res.MR_hierarchy = l.results$l.res.MR_hierarchy
+
 
 format_results(l.grn_subnetworks = l.res.link_annotation$l.grn_subnetworks,
                tb.condition_tissue_differentialExpression = l.res.link_annotation$tb.condition_tissue_differentialExpression,
