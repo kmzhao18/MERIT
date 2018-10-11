@@ -3253,6 +3253,16 @@ run_MERIT <- function(b.load_grn_inference = "yes",
     source("https://bioconductor.org/biocLite.R")
     biocLite(new.packages)
   } 
+  
+ 
+  if(!"Biostrings" %in% installed.packages()){
+    stop("Error: Biostrings package could not be installed from Bioconductor")
+  }
+  
+  if(!"TFBSTools" %in% installed.packages()){
+    stop("Error: TFBSTools package could not be installed from Bioconductor")
+  }
+  
 
   if(!file.exists(foldername.tmp)){
     dir.create(foldername.tmp)
