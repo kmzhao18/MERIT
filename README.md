@@ -9,6 +9,7 @@ MERIT
 The easiest way to install `MERIT` is through `devtools` (see OS specific notes on installing devtools at the end). 
 
 ```
+# install.packages("devtools")
 library(devtools)
 install_github("MERIT","mbanf")
 
