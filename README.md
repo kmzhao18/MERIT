@@ -95,7 +95,7 @@ MERIT Parameter sets:
 * `th.pval_masterRegulator` (default = 0.05)
 
 * `importance.measure` (default = "impurity")
-* `ntrees` (default = 1000)
+* `n.trees` (default = 1000)
 * `n.lead_method_expression_shuffling` (default  = 3)
 * `nbootstrap` (default = 100)
 * `nstepsLARS` (default = 5)
@@ -120,7 +120,7 @@ l.results = run_MERIT(b.load_grn_inference = "yes",
                       n.cpus = 3,
                       seed=1234,
                       importance.measure="impurity",
-                      ntrees=1000,
+                      n.trees=1000,
                       n.lead_method_expression_shuffling = 3,
                       n.bootstrap=100,
                       n.stepsLARS=5,
