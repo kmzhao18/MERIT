@@ -3247,7 +3247,7 @@ run_MERIT <- function(b.load_grn_inference = "yes",
   
  
   
-  list.of.packages <- c("Biostrings", "TFBSTools")#,"seqLogo", "PWMEnrich", "BSgenome.Athaliana.TAIR.TAIR9")
+  list.of.packages <- c("Biostrings", "DirichletMultinomial", "TFBSTools")#,"seqLogo", "PWMEnrich", "BSgenome.Athaliana.TAIR.TAIR9")
   new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)){
     source("https://bioconductor.org/biocLite.R")
@@ -3258,6 +3258,11 @@ run_MERIT <- function(b.load_grn_inference = "yes",
   if(!"Biostrings" %in% installed.packages()){
     stop("Error: Biostrings package could not be installed from Bioconductor")
   }
+  
+  if(!"DirichletMultinomial" %in% installed.packages()){
+    stop("Error: DirichletMultinomial package could not be installed from Bioconductor")
+  }
+  
   
   if(!"TFBSTools" %in% installed.packages()){
     stop("Error: TFBSTools package could not be installed from Bioconductor")
