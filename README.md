@@ -196,3 +196,6 @@ A) Overview of the MERIT framework.
 Installation of devtools dependencies under Ubuntu (prior to installing devtools):
 sudo apt-get install build-essential libcurl4-gnutls-dev libxml2-dev libssl-dev
 
+Subsequently, install devtools in R:
+install.packages("devtools")
+
