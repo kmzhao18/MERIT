@@ -51,6 +51,49 @@ install_and_load_libraries <- function(){
 }
 
 
+#' stabilitySelectionProcedure
+#'
+#'
+#' @keywords 
+#' @export
+#' @examples
+stabilitySelection <- function(x,y,nbootstrap=500,nsteps=5,alpha=0.2,plotme=FALSE){
+  
+  dimx <- dim(x)
+  n <- dimx[1]
+  p <- dimx[2]
+  halfsize <- as.integer(n/2)
+  freq <- matrix(0,nsteps+1,p)
+  
+  for (i in seq(nbootstrap)) {
+    
+    # Randomly reweight each variable
+    xs <- t(t(x)*runif(p,alpha,1))
+    
+    # Ramdomly split the sample in two sets
+    perm <- sample(dimx[1])
+    i1 <- perm[1:halfsize]
+    i2 <- perm[(halfsize+1):n]
+    
+    # run the randomized lasso on each sample and check which variables are selected
+    r <- lars(xs[i1,],y[i1], max.steps=nsteps,normalize=FALSE, use.Gram=FALSE) #, eps = .Machine$double.eps)
+    freq <- freq + abs(sign(coef.lars(r)))
+    r <- lars(xs[i2,],y[i2],max.steps=nsteps,normalize=FALSE, use.Gram=FALSE)
+    freq <- freq + abs(sign(coef.lars(r)))
+    
+  }
+  
+  # normalize frequence in [0,1]
+  freq <- freq/(2*nbootstrap)
+  
+  if (plotme) {
+    matplot(freq,type='l',xlab="LARS iteration",ylab="Frequency")
+  }
+  
+  # the final stability score is the maximum frequency over the steps
+  result <- apply(freq,2,max)
+}
+
 run_comparative_evaluation <- function(){
   
   n.min_hit_links = 5
@@ -632,7 +675,7 @@ prepare = function(){
 }
   
 
-compute_randomforest_based_GRN <- function(mat.expression=mat.expression, k="sqrt", nb.trees=10000, set.regulators = NULL, set.genes = NULL, seed=1234, importance.measure = "impurity", n.cpus = 5){
+compute_randomforest_based_GRN <- function(mat.expression, k="sqrt", nb.trees=10000, set.regulators = NULL, set.genes = NULL, seed=1234, importance.measure = "impurity", n.cpus = 5){
   
   if (!is.null(seed)) {
     set.seed(seed)
@@ -713,7 +756,7 @@ compute_randomforest_based_GRN <- function(mat.expression=mat.expression, k="sqr
 }       
 
 
-compute_linearRegressionWithStabilitySelection_based_GRN <- function(mat.expression=mat.expression, set.regulators = NULL, set.genes = NULL, nbootstrap = 100, nstepsLARS = 5, n.cpus = 5){
+compute_linearRegressionWithStabilitySelection_based_GRN <- function(mat.expression, set.regulators = NULL, set.genes = NULL, nbootstrap = 100, nstepsLARS = 5, n.cpus = 5){
   
   mat.expression.norm <- t(mat.expression)
   mat.expression.norm <- apply(mat.expression.norm, 2, function(x) { (x - mean(x)) / sd(x) } )
@@ -761,10 +804,8 @@ compute_linearRegressionWithStabilitySelection_based_GRN <- function(mat.express
   
   cl<-makeCluster(n.cpus)
   registerDoParallel(cl)
-  l.res <- foreach(i = 1:n.genes, .packages=c("lars")) %dopar% {
+  l.res <- foreach(i = 1:n.genes, .packages=c("lars", "MERIT")) %dopar% {
   
-    source("stabilitySelection.R")
-    
     #for(i in 1:n.genes){
     #  cat("Processing... ", round(i/n.genes * 100, digits = 2) , "%", "\r"); flush.console() 
     gn.i <- genes[i]
@@ -773,7 +814,7 @@ compute_linearRegressionWithStabilitySelection_based_GRN <- function(mat.express
     x <- mat.expression.norm[,regulators.i, drop=FALSE] # avoid coercion to numeric
     y <- mat.expression.norm[,gn.i]
     
-    imp_scores <- stabilityselection(x,y,nbootstrap=nbootstrap,nsteps=nstepsLARS,plotme=FALSE)
+    imp_scores <- stabilitySelection(x,y,nbootstrap=nbootstrap,nsteps=nstepsLARS,plotme=FALSE)
     
     imp_scores  
   }
@@ -816,72 +857,67 @@ compute_linearRegressionWithStabilitySelection_based_GRN <- function(mat.express
 #' @export
 #' @examples
 compute_ensemble_regression_with_montecarlo_based_stability_selection <- function(m.foldChange_differentialExpression,
-                                                                                df.transcriptionFactorAnnotation,
-                                                                                df.geneGroups,
-                                                                                seed=1234,
-                                                                                importance.measure="impurity",
-                                                                                n.trees=1000,
-                                                                                n.lead_method_expression_shuffling = 3,
-                                                                                n.bootstrap=100,
-                                                                                n.stepsLARS=5,
-                                                                                n.cpus=5){
+                                                                                  df.transcriptionFactorAnnotation,
+                                                                                  df.geneGroups,
+                                                                                  seed=1234,
+                                                                                  importance.measure="impurity",
+                                                                                  n.trees=1000,
+                                                                                  n.lead_method_expression_shuffling = 3,
+                                                                                  n.bootstrap=100,
+                                                                                  n.stepsLARS=5,
+                                                                                  n.cpus=5){
           
             df.transcriptionFactorAnnotation = subset(df.transcriptionFactorAnnotation, df.transcriptionFactorAnnotation$with_geneExpression == "yes")
             df.geneGroups = subset(df.geneGroups, df.geneGroups$with_geneExpression == "yes")
             v.tfs = unique(df.transcriptionFactorAnnotation$TF_ID)
             v.genes =  unique(c(v.tfs, rownames(df.geneGroups)))
-          
+            
+            strt<-Sys.time()
             X <- m.foldChange_differentialExpression[v.genes,]
             colnames(X) = as.character(seq(1:dim(X)[2]))
             
             message("running lead method (random forest regression) with Monte Carlo based threshold selection")  
-            strt<-Sys.time()
             m.rf_grn <- compute_randomforest_based_GRN(mat.expression=X, k="sqrt", nb.trees=n.trees, set.regulators = v.tfs, set.genes = v.genes, seed=seed, importance.measure = importance.measure, n.cpus = n.cpus)
             saveRDS(m.rf_grn, paste("tmp/m.grn.RF.rds", sep = ""))
-            print(Sys.time()-strt)
             
             set.seed(seed)
             message("running linear regression") 
             m.lr_grn <- compute_linearRegressionWithStabilitySelection_based_GRN(mat.expression=X, set.regulators = v.tfs, set.genes = v.genes, nbootstrap = n.bootstrap, nstepsLARS = n.stepsLARS, n.cpus = n.cpus)
             saveRDS(m.lr_grn, paste("tmp/m.grn.LR.rds", sep = ""))
-            print(Sys.time()-strt)
             
             message("running context likelihood of relatedness (CLR)")
             m.MI = knnmi.all(X)
             m.CLR = parmigene::clr(m.MI)
             m.CLR = m.CLR[v.tfs, v.genes]
             saveRDS(m.CLR, paste("tmp/m.grn.CLR.rds"))
-            
+            print(Sys.time()-strt)
             # message("running Pearson's correlation (PCC)")
             # m.PCC = cor(t(X), method = "pearson")
             # m.PCC = m.PCC[v.tfs, v.genes]
             # saveRDS(m.PCC, paste("tmp/m.grn.PCC.rds"))
             
-            for(i in 2:n.lead_method_expression_shuffling){
+            for(i in 1:n.lead_method_expression_shuffling){
               
               message("running background monte carlo run", i)
+              strt<-Sys.time()
               set.seed(seed + 25 * i)
               X.shuffled <- t(apply (X, 1,  function(m) sample(m, length(m))))
               
               message("running random forest regression")
-              strt<-Sys.time()
               m.rf.shuffled <- compute_randomforest_based_GRN(mat.expression=X.shuffled, k="sqrt", nb.trees=n.trees, set.regulators = v.tfs, set.genes = v.genes, seed= (seed + 25 * i), importance.measure = importance.measure, n.cpus = n.cpus)
               saveRDS(m.rf.shuffled, paste("tmp/m.grn.RF_bg_", i, ".rds", sep = ""))
-              print(Sys.time()-strt)
-              
+        
               message("running linear regression") 
-              strt<-Sys.time()
               set.seed(seed + 25 * i)
               m.lr_grn <- compute_linearRegressionWithStabilitySelection_based_GRN(mat.expression=X.shuffled, set.regulators = v.tfs, set.genes = v.genes, nbootstrap = n.bootstrap, nstepsLARS = n.stepsLARS, n.cpus = n.cpus)
               saveRDS(m.lr_grn, paste("tmp/m.grn.LR_bg_", i, ".rds", sep = ""))
-              print(Sys.time()-strt)
               
-              essage("running context likelihood of relatedness (CLR)")
+              message("running context likelihood of relatedness (CLR)")
               m.MI = knnmi.all(X.shuffled)
               m.CLR = parmigene::clr(m.MI)
               m.CLR = m.CLR[v.tfs, v.genes]
               saveRDS(m.CLR, paste("tmp/m.grn.CLR_bg_", i, ".rds", sep = ""))
-              
+              print(Sys.time()-strt)
             }
             
            
@@ -1017,10 +1053,10 @@ load_lead_support_grn <- function(df.transcriptionFactorAnnotation,
   m.grn.support[m.grn.support <  n.grnSupport] = 0
   m.grn.support[m.grn.support >= n.grnSupport] = 1
   
-  m.lead_suppport.grn = m.rf_grn * m.grn.support 
+  m.lead_support.grn = m.rf_grn * m.grn.support 
   
   
-  return(list(m.lead_suppport.grn = m.lead_suppport.grn, 
+  return(list(m.lead_support.grn = m.lead_support.grn, 
               m.rf_grn = m.rf_grn, 
               m.lr_grn = m.lr_grn, 
               m.clr_grn = m.clr_grn))
@@ -1375,12 +1411,12 @@ transcriptionFactorBindingInference <- function(m.grn,
   
   tfs_w_motif_binding = intersect(rownames(m.motifNet), rownames(m.grn))
   tgs_w_motif_binding = intersect(colnames(m.motifNet), colnames(m.grn))
-  m.lead_suppport_w_motif.grn <- m.motifNet[tfs_w_motif_binding, tgs_w_motif_binding] * m.grn[tfs_w_motif_binding, tgs_w_motif_binding]
+  m.lead_support_w_motif.grn <- m.motifNet[tfs_w_motif_binding, tgs_w_motif_binding] * m.grn[tfs_w_motif_binding, tgs_w_motif_binding]
   
   
   return(list(m.motifNet.pval=m.motifNet.pval, 
               m.motifNet.tgs=m.motifNet.tgs, 
-              m.lead_suppport_w_motif.grn=m.lead_suppport_w_motif.grn))
+              m.lead_support_w_motif.grn=m.lead_support_w_motif.grn))
 }
 
 
@@ -1697,8 +1733,6 @@ perform_treatment_and_tissue_filtering <- function(m.grn,
   
   
   
-  message("Step D) - Extract context specific networks")
-  
   # perform treatment filtering for the entire random forest set - integrate with motif late
   v.tfs.rf <- rownames(m.rf_w_treatments)
   v.tgs.rf <- colnames(m.rf_w_treatments)
@@ -1710,7 +1744,7 @@ perform_treatment_and_tissue_filtering <- function(m.grn,
   
   
   tb.condition_tissue_differentialExpression <- colSums(m.gn_condition_tissue_differentialExpression)
-  message(length(which(tb.condition_tissue_differentialExpression > 0)), " out of ", length(tb.condition_tissue_differentialExpression), " conditions and tissue pairs with expressed genes ")
+  #message(length(which(tb.condition_tissue_differentialExpression > 0)), " out of ", length(tb.condition_tissue_differentialExpression), " conditions and tissue pairs with expressed genes ")
   
   idx.pairs <- which(tb.condition_tissue_differentialExpression > 0)
   
@@ -1748,7 +1782,7 @@ perform_treatment_and_tissue_filtering <- function(m.grn,
   idx.subnetworks <- which( lapply(l.grn_subnetworks, sum) > 0)
   l.grn_subnetworks <- l.grn_subnetworks[idx.subnetworks]
   
-  message("number of inferred subnetworks ", length(idx.subnetworks))
+  #message("number of inferred subnetworks ", length(idx.subnetworks))
 
   return(list(l.treatments_and_tissues=l.treatments_and_tissues, m.rf_w_treatments = m.rf_w_treatments, l.regulatoryNetwork_treatments_and_tissues = l.regulatoryNetwork_treatments_and_tissues, l.grn_subnetworks = l.grn_subnetworks,  m.gn_condition_tissue_differentialExpression = m.gn_condition_tissue_differentialExpression, tb.condition_tissue_differentialExpression = tb.condition_tissue_differentialExpression))
 }
@@ -1800,7 +1834,7 @@ annotate_links_with_treatments_and_tissues <- function(m.lead_support_w_motif.gr
   
   if(b.load == "no"){
     
-    m.grn = m.lead_suppport_w_motif.grn
+    m.grn = m.lead_support_w_motif.grn
     m.grn[m.grn > 0] = 1
     m.de = m.pvalue_differentialExpression
     
@@ -2886,8 +2920,7 @@ format_results = function(l.grn_subnetworks,
     for(i in 1:length(v.sub_net)){
       
       condition = unlist(strsplit(names(v.sub_net)[i],  " - "))
-      df.ratio$condition[i] = condition
-      
+      df.ratio$condition[i] = condition[1]
       df.ratio$grn_size[i] = as.numeric(v.sub_net[i])
       df.ratio$tmt_number[i] = as.numeric(tb.condition_treatments[condition[1]]) 
       
@@ -3185,7 +3218,7 @@ run_MERIT <- function(b.load_grn_inference = "yes",
                       n.cpus = 3,
                       seed=1234,
                       importance.measure="impurity",
-                      ntrees=1000,
+                      n.trees=1000,
                       n.lead_method_expression_shuffling = 3,
                       n.bootstrap=100,
                       n.stepsLARS=5,
@@ -3212,7 +3245,15 @@ run_MERIT <- function(b.load_grn_inference = "yes",
                       foldername.results = "results/"){
   
   
+ 
   
+  list.of.packages <- c("Biostrings", "TFBSTools")#,"seqLogo", "PWMEnrich", "BSgenome.Athaliana.TAIR.TAIR9")
+  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+  if(length(new.packages)){
+    source("https://bioconductor.org/biocLite.R")
+    biocLite(new.packages)
+  } 
+
   if(!file.exists(foldername.tmp)){
     dir.create(foldername.tmp)
   }
@@ -3252,7 +3293,7 @@ run_MERIT <- function(b.load_grn_inference = "yes",
   message("--------------------------------------------------")
   message("Step 2 - Transcription factor direct target promoter binding based filtering of gene regulatory link predictions")
   
-  l.res.grn_tfbs = transcriptionFactorBindingInference(m.grn = l.res.grn$m.lead_suppport.grn , 
+  l.res.grn_tfbs = transcriptionFactorBindingInference(m.grn = l.res.grn$m.lead_support.grn , 
                                                        file.TF_to_Motif_IDs = file.TF_to_Motif_IDs,
                                                        file.TFBS_motifs = file.TFBS_motifs,
                                                        file.promoterSeq = file.promoterSeq,
@@ -3268,7 +3309,7 @@ run_MERIT <- function(b.load_grn_inference = "yes",
   message("--------------------------------------------------")
   message("Step 3 - Context specific annotation and filtering of gene regulatory link predictions")
   
-  l.res.link_annotation = annotate_links_with_treatments_and_tissues(m.lead_support_w_motif.grn=l.res.tfbs$m.lead_suppport_w_motif.grn, 
+  l.res.link_annotation = annotate_links_with_treatments_and_tissues(m.lead_support_w_motif.grn=l.res.grn_tfbs$m.lead_support_w_motif.grn, 
                                                                      m.pvalue_differentialExpression=m.pvalue_differentialExpression,
                                                                      df.experiment_condition_annotation=df.experiment_condition_annotation,
                                                                      tb.condition_treatments=tb.condition_treatments,

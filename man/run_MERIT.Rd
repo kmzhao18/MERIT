@@ -15,7 +15,7 @@ run_MERIT(b.load_grn_inference = "yes", b.load_TFBS_inference = "yes",
   df.geneGroups = df.geneGroups, tb.geneGroups = tb.geneGroups,
   v.geneGroups = v.geneGroups, l.geneGroups = l.geneGroups,
   n.cpus = 3, seed = 1234, importance.measure = "impurity",
-  ntrees = 1000, n.lead_method_expression_shuffling = 3,
+  n.trees = 1000, n.lead_method_expression_shuffling = 3,
   n.bootstrap = 100, n.stepsLARS = 5, th.lead_grn_method = 0.95,
   th.support_grn_methods = 0.95, n.grnSupport = 1,
   file.TF_to_Motif_IDs = "data/TF_to_Motif_IDs.txt",
@@ -43,8 +43,6 @@ run_MERIT(b.load_grn_inference = "yes", b.load_TFBS_inference = "yes",
 \item{seed}{(default = 1234)}
 
 \item{importance.measure}{(default = "impurity")}
-
-\item{ntrees}{(default  = 1000)}
 
 \item{n.lead_method_expression_shuffling}{(default  = 3)}
 
@@ -89,6 +87,8 @@ run_MERIT(b.load_grn_inference = "yes", b.load_TFBS_inference = "yes",
 \item{foldername.tmp}{(default = "tmp/")}
 
 \item{foldername.results}{= (default = "results/")}
+
+\item{ntrees}{(default  = 1000)}
 
 \item{nbootstrap}{(default = =100)}
 
