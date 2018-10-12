@@ -3087,7 +3087,7 @@ format_results = function(l.grn_subnetworks,
 #' @param n.cpus
 #' @param seed (default = 1234)
 #' @param importance.measure  (default = "impurity")
-#' @param ntrees (default  = 1000)
+#' @param n.trees (default  = 1000)
 #' @param n.lead_method_expression_shuffling (default  = 3)
 #' @param nbootstrap (default = =100)
 #' @param nstepsLARS (default = 5)
@@ -3149,7 +3149,7 @@ format_results = function(l.grn_subnetworks,
 #'                       n.cpus = 3,
 #'                       seed=1234,
 #'                       importance.measure="impurity",
-#'                       ntrees=1000,
+#'                       n.trees=1000,
 #'                       n.lead_method_expression_shuffling = 3,
 #'                       n.bootstrap=100,
 #'                       n.stepsLARS=5,
