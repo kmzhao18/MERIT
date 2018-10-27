@@ -25,8 +25,6 @@ library(MERIT) # load package
 
 setwd("/User/home/athaliana_PMN_2017") # set working directory to the dataset files
 
-# install_and_load_libraries()
-
 
 ```
 
