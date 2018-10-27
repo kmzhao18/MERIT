@@ -3120,8 +3120,6 @@ format_results = function(l.grn_subnetworks,
 #' 
 #' setwd(...) # set to dataset
 #' 
-#' #install_and_load_libraries()
-#' 
 #' 
 #' l.data  =  load_datasets(filename.genes = "data/genes.txt",
 #'                          filename.experiment_series_ids = "data/experiment_series_ids.txt",
