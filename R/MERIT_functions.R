@@ -1312,7 +1312,7 @@ transcriptionFactorBindingInference <- function(m.grn,
             #Sequences <- subseq(Sequences, 3001 - v.th.motif_binding_promoter[i], 3000) # pre startsite
             if(length(Sequences) > 0){
               sitesetList = searchSeq(pwmList, Sequences, min.score=th.min.score.motif, strand="*") #, mc.cores = n.cpus)
-              l.pvalues_binding_per_sequence <- pvalues(sitesetList, type="TFMPvalue")
+              l.pvalues_binding_per_sequence <- pvalues(sitesetList, type="sampling")
               pval.min.tgs <- unlist(lapply(l.pvalues_binding_per_sequence, function(m) min(unlist(m))))
               pval.min.tgs <- pval.min.tgs[pval.min.tgs != "Inf"]
               if(length(pval.min.tgs) > 0){
@@ -1342,7 +1342,7 @@ transcriptionFactorBindingInference <- function(m.grn,
                 }
               }
               sitesetList = searchSeq(pwmList, Sequences, min.score=th.min.score.motif, strand="*") #, mc.cores = n.cpus)
-              l.pvalues_binding_per_sequence <- pvalues(sitesetList, type="TFMPvalue")
+              l.pvalues_binding_per_sequence <- pvalues(sitesetList, type="sampling")
               pval.min.tgs <- unlist(lapply(l.pvalues_binding_per_sequence, function(m) min(unlist(m))))
               pval.min.tgs <- pval.min.tgs[pval.min.tgs != "Inf"]
               
