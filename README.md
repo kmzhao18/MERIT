@@ -3,7 +3,7 @@
 ## About
 MERIT
 
-[Contact the author](mailto:mbanf.research@gmail.com) in case you've found a bug. 
+[Contact the author](mailto:michael@junkdna.ai) in case you've found a bug. 
 
 ## Installation
 The easiest way to install `MERIT` is through `devtools` (see OS specific notes on installing devtools at the end). 
