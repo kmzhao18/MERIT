@@ -198,7 +198,7 @@ sudo apt-get install build-essential libcurl4-gnutls-dev libxml2-dev libssl-dev
 Subsequently, install devtools in R:
 install.packages("devtools")
 
-
+If you have difficulaties installing TFBSTOOLS
 sudo apt-get install gsl-bin libgsl0-dev
 
 
