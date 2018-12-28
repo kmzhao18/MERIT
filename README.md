@@ -32,7 +32,7 @@ setwd("/User/home/athaliana_PMN_2017") # set working directory to the dataset fi
 Load datasets parameters:
 
 * `filename.genes` genes (rows of the expression datasets)
-* `filename.experiment_series_ids` experimental datasets (columns of the expression datasets)
+* `filename.experiment_ids` experimental datasets (columns of the expression datasets)
 * `filename.foldChange_differentialExpression` differential expression data (fold changes)
 * `filename.pvalue_differentialExpression`  differential expression data (p-values)
 * `filename.experiment_condition_tissue_annotation` experiment to treatment and tissue annotation
@@ -41,10 +41,10 @@ Load datasets parameters:
 
 ```
 l.data  =  load_datasets(filename.genes = "data/genes.txt",
-                         filename.experiment_series_ids = "data/experiment_series_ids.txt",
+                         filename.experiment_ids = "data/experiment_ids.txt",
                          filename.foldChange_differentialExpression = "data/m.foldChange_differentialExpression.txt",
                          filename.pvalue_differentialExpression =	"data/m.pvalue_differentialExpression.txt",
-                         filename.experiment_condition_tissue_annotation =	"data/df.experiment_condition_annotation.txt",
+                         filename.experiment_condition_tissue_annotation =	"data/experiment_annotation.txt",
                          filename.transcriptionfactor_annotation = "data/df.transcriptionFactorAnnotation.txt", 
                          filename.geneGroups = "data/df.enzymes_w_metabolic_domains.txt")
 ```
@@ -55,7 +55,7 @@ MERIT Parameter sets:
 
 
 * `b.load_grn_inference` load precomputed grns ("yes", "no")
-* `b.load_TFBS_inference` load precomputed TFBS with GRN ("yes","no")
+* `b.load_TFBS_inference` load precomputed TFBS ("yes","no")
 * `b.load_treatment_tissue_inference` load precomputed annotation filgerung ("yes","no")
 
 * `m.foldChange_differentialExpression` differential expression foldchange matrix - rows are genes, cols are experiments
@@ -103,9 +103,10 @@ MERIT Parameter sets:
 * `foldername.results` results file folder name (default = results/)
 
 ```
+
 l.results = run_MERIT(b.load_grn_inference = "yes",
-                      b.load_TFBS_inference = "yes",
-                      b.load_treatment_tissue_inference = "yes",
+                      b.load_TFBS_inference = "no",
+                      b.load_treatment_tissue_inference = "no",
                       m.foldChange_differentialExpression=l.data$m.foldChange_differentialExpression,
                       m.pvalue_differentialExpression=l.data$m.pvalue_differentialExpression,
                       df.experiment_condition_annotation=l.data$df.experiment_condition_annotation,
@@ -116,11 +117,11 @@ l.results = run_MERIT(b.load_grn_inference = "yes",
                       tb.geneGroups=l.data$tb.geneGroups,
                       v.geneGroups=l.data$v.geneGroups,
                       l.geneGroups=l.data$l.geneGroups, 
-                      n.cpus = 3,
+                      n.cpus = 4,
                       seed=1234,
                       importance.measure="impurity",
                       n.trees=1000,
-                      n.lead_method_expression_shuffling = 3,
+                      n.lead_method_expression_shuffling = 1,
                       n.bootstrap=100,
                       n.stepsLARS=5,
                       th.lead_grn_method = 0.95,
@@ -132,7 +133,7 @@ l.results = run_MERIT(b.load_grn_inference = "yes",
                       file.geneSeq = "data/TAIR10_seq_20110103_representative_gene_model_updated.txt",
                       th.pre_tss = 1000,
                       th.post_tss = 200,
-                      genome_nucleotide_distribution = c(0.3253439, 0.1746561, 0.1746561, 0.3253439),
+                      genome_nucleotide_distribution = c(A = 0.3253439, C = 0.1746561, G = 0.1746561, T = 0.3253439 ),
                       th.pval.known_motifs = 0.05,
                       th.diffexp = 0.05,
                       th.pval.treatment = 0.05, 
@@ -144,6 +145,7 @@ l.results = run_MERIT(b.load_grn_inference = "yes",
                       th.pval_masterRegulator = 0.05, 
                       foldername.tmp = "tmp/", 
                       foldername.results = "results/")
+
 ```
 
 Next evaluate and store the results
@@ -169,9 +171,9 @@ format_results(l.grn_subnetworks = l.res.link_annotation$l.grn_subnetworks,
                l.Hierarchy_tfs_per_tier=l.res.MR_hierarchy$l.Hierarchy_tfs_per_tier,
                l.Hierarchy_nb_tfs_per_tier=l.res.MR_hierarchy$l.Hierarchy_nb_tfs_per_tier,
                l.df.masterRegulatorHierarchy=l.res.MR_hierarchy$l.df.masterRegulatorHierarchy,
-               v.number_tiers=l.res.MR_hierarchy$v.number_tiers,
-               m.MR_vs_conditions = l.res.MR_hierarchy$m.MR_vs_conditions,  
-               l.MR_vs_geneGroups_given_condition = l.res.MR_hierarchy$l.MR_vs_geneGroups_given_condition, 
+               v.number_tiers=l.res.MR_hierarchy$v.number_tiers, 
+               m.MR_vs_conditions = l.res.MR_hierarchy$m.MR_vs_conditions,  # A) TFs versus Conditions (Matrix plot) P(TF,C)
+               l.MR_vs_geneGroups_given_condition = l.res.MR_hierarchy$l.MR_vs_geneGroups_given_condition,  # B) per condition - TFs versus Domains (P(TF,D|C)) => also cumulative plot 
                number_of_conditions_per_master_regulator=l.res.MR_hierarchy$number_of_conditions_per_master_regulator,
                tb.condition_treatments=l.data$tb.condition_treatments,
                tb.condition_tissues=l.data$tb.condition_tissues,
