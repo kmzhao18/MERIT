@@ -5,7 +5,7 @@
 \title{Load dataset function}
 \usage{
 load_datasets(filename.genes = "data/genes.txt",
-  filename.experiment_series_ids = "data/experiment_series_ids.txt",
+  filename.experiment_ids = "data/experiment_ids.txt",
   filename.foldChange_differentialExpression = "data/m.foldChange_differentialExpression.txt",
   filename.pvalue_differentialExpression = "data/m.pvalue_differentialExpression.txt",
   filename.experiment_condition_tissue_annotation = "data/df.experiment_condition_annotation.txt",

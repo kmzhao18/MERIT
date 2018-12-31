@@ -6,9 +6,10 @@
 \usage{
 transcriptionFactorBindingInference(m.grn, file.TF_to_Motif_IDs = "",
   file.TFBS_motifs = "", file.promoterSeq = "", file.geneSeq = "",
-  th.pre_tss = 1000, th.post_tss = 200, th.min.score.motif = "80\%",
-  genome_nucleotide_distribution = c(0.3253439, 0.1746561, 0.1746561,
-  0.3253439), th.pval.known_motifs = 0.05, n.cpus = 2, b.load = "no")
+  th.pre_tss = 1000, th.post_tss = 200,
+  genome_nucleotide_distribution = c(A = 0.3253439, C = 0.1746561, G =
+  0.1746561, T = 0.3253439), th.pval.known_motifs = 0.05,
+  th.multipleHypothesisTest = "bonferroni", b.load = FALSE)
 }
 \arguments{
 \item{m.grn}{gene regulatory network}

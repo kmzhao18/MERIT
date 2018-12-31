@@ -5,6 +5,7 @@
 \title{load grns}
 \usage{
 load_lead_support_grn(df.transcriptionFactorAnnotation, df.geneGroups,
+  m.foldChange_differentialExpression, targetSet = "all",
   th.lead_grn_method = 0.95, n.lead_method_expression_shuffling = 3,
   th.support_grn_methods = 0.95, n.grnSupport = 1)
 }
