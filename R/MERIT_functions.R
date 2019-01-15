@@ -954,9 +954,9 @@ compute_ensemble_regression_with_montecarlo_based_stability_selection <- functio
               set.seed(seed + 25 * i)
               X.shuffled <- t(apply (X, 1,  function(m) sample(m, length(m))))
 # 
-#               message("running random forest regression")
-#               m.rf.shuffled <- compute_randomforest_based_GRN(mat.expression=X.shuffled, k="sqrt", nb.trees=n.trees, set.regulators = v.tfs, set.genes = v.genes, seed= (seed + 25 * i), importance.measure = importance.measure, n.cpus = n.cpus)
-#               saveRDS(m.rf.shuffled, paste("tmp/m.grn.RF_bg_", i, ".rds", sep = ""))
+              message("running random forest regression")
+              m.rf.shuffled <- compute_randomforest_based_GRN(mat.expression=X.shuffled, k="sqrt", nb.trees=n.trees, set.regulators = v.tfs, set.genes = v.genes, seed= (seed + 25 * i), importance.measure = importance.measure, n.cpus = n.cpus)
+              saveRDS(m.rf.shuffled, paste("tmp/m.grn.RF_bg_", i, ".rds", sep = ""))
 
               message("running linear regression")
               set.seed(seed + 25 * i)
@@ -968,13 +968,17 @@ compute_ensemble_regression_with_montecarlo_based_stability_selection <- functio
               message("running context likelihood of relatedness (CLR)")
               m.MI = knnmi.all(X.shuffled)
               saveRDS(m.MI, paste("tmp/m.MI_bg_", i, ".rds", sep = ""))
+              
+              m.MI <- readRDS(paste("tmp/m.MI_bg_", i, ".rds", sep = ""))
+              
+              
               m.CLR = parmigene::clr(m.MI)
               m.CLR = m.CLR[v.tfs, v.genes]
               saveRDS(m.CLR, paste("tmp/m.grn.CLR_bg_", i, ".rds", sep = ""))
               print(Sys.time()-strt)
               
               rm(m.MI)
-              rm(M.CLR)
+              rm(m.CLR)
               
               
             }
@@ -999,7 +1003,7 @@ compute_ensemble_regression_with_montecarlo_based_stability_selection <- functio
             #   # message("running linear regression") 
             #   # strt<-Sys.time()
             #   # set.seed(seed + 25 * i)
-            #   # m.lr_grn <- compute_linearRegressionWithStabilitySelection_based_GRN(mat.expression=X.shuffled, set.regulators = v.tfs, set.genes = v.genes, nbootstrap = n.bootstrap, nstepsLARS = n.stepsLARS, n.cpus = n.cpus)
+            #   # m.lr_grn <- compute_l7inearRegressionWithStabilitySelection_based_GRN(mat.expression=X.shuffled, set.regulators = v.tfs, set.genes = v.genes, nbootstrap = n.bootstrap, nstepsLARS = n.stepsLARS, n.cpus = n.cpus)
             #   # saveRDS(m.lr_grn, paste("tmp/m.grn.LR_bg_", i, ".rds", sep = ""))
             #   # print(Sys.time()-strt)
             #   # 
@@ -1218,7 +1222,6 @@ load_datasets = function(filename.genes = "data/genes.txt",
   if(nrow(df.transcriptionFactorAnnotation) == 0){
     stop("Error: no transcription factor annotation found")
   }
-  
   df.transcriptionFactorAnnotation["with_geneExpression"] = "no"
   df.transcriptionFactorAnnotation$with_geneExpression[which(df.transcriptionFactorAnnotation$TF_ID %in% genes)] = "yes"
   
@@ -1233,6 +1236,7 @@ load_datasets = function(filename.genes = "data/genes.txt",
   
   tb.geneGroups = colSums(df.geneGroups)
   v.geneGroups = colnames(df.geneGroups)
+  
   
   l.geneGroups <- vector(mode = "list", length = length(v.geneGroups))
   names(l.geneGroups) <- v.geneGroups
@@ -1256,7 +1260,8 @@ load_datasets = function(filename.genes = "data/genes.txt",
               df.geneGroups=df.geneGroups,
               tb.geneGroups=tb.geneGroups,
               v.geneGroups=v.geneGroups,
-              l.geneGroups=l.geneGroups
+              l.geneGroups=l.geneGroups, 
+              genes = genes
   ))
 }
 
@@ -2204,10 +2209,15 @@ annotate_links_with_treatments_and_tissues <- function(m.lead_support_w_motif.gr
 
 
 
+
+
+
 # identify master regulators => save iniital for stability selection
 identify_bottom_tier_masterRegulators <- function(m.grn,
                                                   l.grn_subnetworks,
                                                   v.tfs,
+                                                  v.genes,
+                                                  v.group_genes,
                                                   v.conds,
                                                   df.transcriptionFactorAnnotation, 
                                                   df.geneGroups,
@@ -2218,25 +2228,10 @@ identify_bottom_tier_masterRegulators <- function(m.grn,
                                                   th.pval = 0.05,
                                                   b.include_under_represented = "yes"){
   
-  
-  
-  
-  n.enz = nrow(df.geneGroups)
-  v.genes = v.enz = rownames(df.geneGroups)
 
-  # metabolic enzymes
-  m.tfs_vs_conditions <- matrix(NA, nrow = length(v.tfs), ncol = length(v.conds), 
-                                dimnames = list(v.tfs, v.conds))
-  
-  m.tfs_vs_conditions.numbers <- matrix(NA, nrow = length(v.tfs), ncol = length(v.conds), 
-                                        dimnames = list(v.tfs, v.conds))
-  
-  # metabolic domains 
-  l.tfs_vs_domains_given_condition <- vector(mode = "list", length = length(v.conds))
-  names(l.tfs_vs_domains_given_condition) <- v.conds
-  
-  l.tfs_vs_domains_given_condition.numbers <- vector(mode = "list", length = length(v.conds))
-  names(l.tfs_vs_domains_given_condition.numbers) <- v.conds
+  n.group_genes = length(intersect(v.group_genes, v.genes))
+  n.genes = length(v.genes)
+  m.tfs_vs_conditions <- matrix(NA, nrow = length(v.tfs), ncol = length(v.conds), dimnames = list(v.tfs, v.conds))
   
   pb <- txtProgressBar(min = 0, max = length(v.conds), style = 3)
   for(i in 1:length(v.conds)){
@@ -2248,16 +2243,7 @@ identify_bottom_tier_masterRegulators <- function(m.grn,
     m.grn.i <- as.matrix(l.grn_subnetworks[[i]])
     df.idx.grn.i <- which(m.grn.i == 1, arr.ind = TRUE)
     df.grn.i <- data.frame(TF = rownames(m.grn.i)[df.idx.grn.i[,1]], TG = colnames(m.grn.i)[df.idx.grn.i[,2]], stringsAsFactors = FALSE)
-    # df.grn.i <- subset(df.grn.i, df.grn.i$TG %in% v.genes) # subset to metabolic enzumes
-    
-    
-    l.tfs_vs_domains_given_condition[[i]] <- matrix(NA, nrow = length(v.tfs), ncol = length(v.geneGroups), 
-                                                    dimnames = list(v.tfs, (v.geneGroups)))
-    
-    
-    l.tfs_vs_domains_given_condition.numbers[[i]] <- matrix(NA, nrow = length(v.tfs), ncol = length(v.geneGroups), 
-                                                            dimnames = list(v.tfs, (v.geneGroups)))
-    
+  
     if(nrow(df.grn.i) > 0){
       
       tfs.grn.i <- unique(df.grn.i$TF) # all transcritption factors in the network
@@ -2270,27 +2256,13 @@ identify_bottom_tier_masterRegulators <- function(m.grn,
         df.grn.ij <- subset(df.grn.i, df.grn.i$TF == tf.ij)  # number of targets in condition by TF
         
         # condition specific network 
-
-        n.enzymes.ij = length(which(df.grn.ij$TG %in% v.enz))
+        n.group_genes.ij = length(which(df.grn.ij$TG %in% v.group_genes))
         n.genes.ij   = nrow(df.grn.ij)
   
-        n.genes = dim(m.grn)[2]
-        
-        
-        hitInSample = n_A_B = n.enzymes.ij
+        hitInSample = n_A_B = n.group_genes.ij
         sampleSize = n_A = n.genes.ij
-        hitInPop = n_B = n.enz
+        hitInPop = n_B = n.group_genes
         popSize = n_C = n.genes
-        
-          
-        #hitInSample = n_A_B = nrow(df.grn.ij) # links per transcriptoin factor (family, conditios) in the network
-        #sampleSize = n_A = nrow(df.grn.i) # n.links.i # number of links in the subnetwork
-        
-        # condition independent network
-        #hitInPop = n_B = sum(m.grn[tf.ij,]) #n.tgs.grn_w_treatments_w_motifs.r #sum(m.gn_condition_tissue_differentialExpression[tf.IDs.global,ct.i])
-        #popSize = n_C = sum(m.grn) #n.tgs.grn_w_treatments_w_motifs  # (n.grn_w_treatments_w_motifs) # total number of links
-        
-        
         failInPop = n_C - n_B
         
         if(hitInSample >= th.min_number_targets){
@@ -2306,59 +2278,17 @@ identify_bottom_tier_masterRegulators <- function(m.grn,
           
           if(pval <= th.pval){
             m.tfs_vs_conditions[tf.ij,ct.i] <- fc # enriched or depleated over 
-            m.tfs_vs_conditions.numbers[tf.ij,ct.i] = hitInSample
           }else{
             m.tfs_vs_conditions[tf.ij,ct.i] <- 1
-            m.tfs_vs_conditions.numbers[tf.ij,ct.i] = 0
           }
-          
-          # B) per condition - TFs versus Domains (P(TF,D|C)) => also cumulative plot 
-          for(d in 1:length(v.geneGroups)){ # add the domain level 
-            
-            ## domain genes in target genes - condition dependent 
-            hitInSample = n_A_B = length(intersect((unique(df.grn.ij$TG)), l.geneGroups[[d]]))
-            sampleSize = n_A = length(l.geneGroups[[d]])
-            
-            ## condition independent part 
-            tgs.ij.condition_independent = names(which(m.grn[tf.ij,] > 0))
-            hitInPop = n_B = length(intersect(tgs.ij.condition_independent, v.genes)) 
-            #   hitInPop = n_B = sum(m.rf_w_treatments.stability_selection[tf.ij,]) #n.tgs.grn_w_treatments_w_motifs.r #sum(m.gn_condition_tissue_differentialExpression[tf.IDs.global,ct.i])
-            # popSize = n_C = sum(m.rf_w_treatments.stability_selection) 
-            #   
-            # length(intersect((unique(df.grn.ij$TG)), v.enz)) 
-            popSize = n_C = length(v.genes) 
-            failInPop = n_C-n_B
-            
-            if(hitInSample >= th.min_number_targets){
-              
-              pval <- 1
-              fc <- (n_A_B / n_A) / (n_B / n_C)
-              
-              if(fc > 1){
-                pval <- phyper(n_A_B, n_B, n_C-n_B, n_A,lower.tail= FALSE)
-              }else if(fc < 1){
-                pval <- phyper(n_A_B, n_B, n_C-n_B, n_A,lower.tail= TRUE)
-              }
-              
-              if(pval <= th.pval){
-                l.tfs_vs_domains_given_condition[[i]][tf.ij,d] <- fc
-                l.tfs_vs_domains_given_condition.numbers[[i]][tf.ij,d] <- fc
-              }
-              
-            }
-          }
-          
+         
         }
-        
       }
     }
   }
   close(pb)
   
-  
-  return(list(m.MR_vs_conditions = m.tfs_vs_conditions, 
-              l.MR_vs_geneGroups_given_condition = l.tfs_vs_domains_given_condition, 
-              l.MR_vs_geneGroups_given_condition.numbers = l.tfs_vs_domains_given_condition.numbers))
+  return(list(m.MR_vs_conditions = m.tfs_vs_conditions))
   
 }
 
@@ -2367,8 +2297,7 @@ identify_bottom_tier_masterRegulators <- function(m.grn,
 
 # define the bottom layer
 identify_regulatory_hierachy = function(m.MR_vs_conditions, 
-                                        l.MR_vs_geneGroups_given_condition, 
-                                        
+                                    
                                         m.grn,
                                         l.grn_subnetworks,
                                         
@@ -2383,7 +2312,6 @@ identify_regulatory_hierachy = function(m.MR_vs_conditions,
                                         l.geneGroups,
                                         
                                         th.min_number_MR_targets = 2,
-                                        mode = "geneGroups",
                                         th.pval = 0.05){ # or genes
   
   
@@ -2414,19 +2342,8 @@ identify_regulatory_hierachy = function(m.MR_vs_conditions,
     
     v.MRs = rownames(m.MR_vs_conditions)
     
-    if(mode == "genes"){
-      v.MR_level1 = rownames(m.MR_vs_conditions)[which(m.MR_vs_conditions[,i] > 0)]
-      l.Hierarchy[[i]] = matrix(0, nrow = length(v.MRs), ncol = length(c(v.MRs, v.genes)), dimnames = list(v.MRs, c(v.MRs, v.genes)))
-    }
-    
-    if(mode == "geneGroups"){
-      m.tfs_vs_domains_given_condition = l.MR_vs_geneGroups_given_condition[[i]]
-      m.tfs_vs_domains_given_condition[is.na(m.tfs_vs_domains_given_condition)] = 0
-      m.tfs_vs_domains_given_condition[m.tfs_vs_domains_given_condition < 1] = 0 # only analyze enrichment
-      v.MR_level1 = v.MR_level1_domains = names(which(rowSums(m.tfs_vs_domains_given_condition) > 0))
-      l.Hierarchy[[i]] = matrix(0, nrow = length(v.MRs), ncol = length(c(v.MRs, v.geneGroups)), dimnames = list(v.MRs, c(v.MRs, v.geneGroups)))
-    }
-    
+    v.MR_level1 = rownames(m.MR_vs_conditions)[which(m.MR_vs_conditions[,i] > 0)]
+    l.Hierarchy[[i]] = matrix(0, nrow = length(v.MRs), ncol = length(c(v.MRs, v.genes)), dimnames = list(v.MRs, c(v.MRs, v.genes)))
     
     v.tgs_level_prevs = v.MR_level1    
     v.tfs.putative = v.tfs.i
@@ -2454,18 +2371,12 @@ identify_regulatory_hierachy = function(m.MR_vs_conditions,
         hitInSample = n_A_B = length(tgs_MR.ij) # number of master regulators as targets of TF in condition
         sampleSize = n_A = length(v.tgs_level_prevs) # number of master regulators in condition (not just targets) - and level
         
-        
         # number of condition and TF independent targets
         tgs.ij = names(which(m.grn[tf.ij,] > 0)) 
         
-        # tgs_w_tfs.ij.condition_independent = intersect(v.tfs.w.open_motifs, tgs.ij) # number of 
-        
         hitInPop = n_B = length(tgs.ij) # sum(m.rf_w_treatments.stability_selection[tf.ij,]) #n.tgs.grn_w_treatments_w_motifs.r #sum(m.gn_condition_tissue_differentialExpression[tf.IDs.global,ct.i])
         popSize = n_C = length(colnames(m.grn)) # sum(m.rf_w_treatments.stability_selection) 
-        
-        # length(tgs.ij) # all targets of TF in condition 
-        #popSize = n_C = 
-        
+ 
         # length(v.tgs.i) # all targets in condition (TFs and TGS)
         failInPop = n_C - n_B
         if(hitInSample >= th.min_number_MR_targets){
@@ -2473,9 +2384,7 @@ identify_regulatory_hierachy = function(m.MR_vs_conditions,
           fc <- (n_A_B / n_A) / (n_B / n_C)
           if(fc > 1){
             pval <- phyper(n_A_B, n_B, n_C-n_B, n_A,lower.tail= FALSE)
-          } #else if(fc < 1){
-          #  pval <- phyper(n_A_B, n_B, n_C-n_B, n_A,lower.tail= TRUE)
-          #}
+          } 
           if(pval <= th.pval){
             l.Hierarchy[[i]][tf.ij, tgs_MR.ij] = fc 
             v.tgs_level_next = c(v.tgs_level_next, tf.ij)
@@ -2517,13 +2426,12 @@ identify_regulatory_hierachy = function(m.MR_vs_conditions,
     v.number_tiers[i] = length(l.Hierarchy_nb_tfs_per_tier[[i]])
   }
   
-  ### 
-  
+
   layers <- paste("layer_", 1:max(v.number_tiers), sep="")
   df.masterRegulatorHierarchy <- as.data.frame(matrix(rep(NA, 2 + length(layers)), nrow=1))
   names(df.masterRegulatorHierarchy) <- c("condition", "number_of_tiers",  layers)
   
-  for(i in 1:length(l.MR_vs_geneGroups_given_condition)){
+  for(i in 1:length(v.number_tiers)){
     
     df.masterRegulatorHierarchy.i <- as.data.frame(matrix(rep(NA, 2 + length(layers)), nrow=1))
     names(df.masterRegulatorHierarchy.i) <- c("condition", "number_of_tiers",  layers)
@@ -2541,7 +2449,12 @@ identify_regulatory_hierachy = function(m.MR_vs_conditions,
     df.masterRegulatorHierarchy = rbind(df.masterRegulatorHierarchy, df.masterRegulatorHierarchy.i)
   }
   
-  return(list(l.Hierarchy=l.Hierarchy, l.Hierarchy_tfs_per_tier=l.Hierarchy_tfs_per_tier, l.Hierarchy_nb_tfs_per_tier = l.Hierarchy_nb_tfs_per_tier, df.masterRegulatorHierarchy=df.masterRegulatorHierarchy, v.number_tiers=v.number_tiers))
+  
+  return(list(l.Hierarchy=l.Hierarchy, 
+              l.Hierarchy_tfs_per_tier=l.Hierarchy_tfs_per_tier, 
+              l.Hierarchy_nb_tfs_per_tier = l.Hierarchy_nb_tfs_per_tier, 
+              df.masterRegulatorHierarchy=df.masterRegulatorHierarchy, 
+              v.number_tiers=v.number_tiers))
   
 }
 
@@ -2565,6 +2478,7 @@ identify_regulatory_hierachy = function(m.MR_vs_conditions,
 #' @export
 #' @examples
 do_master_regulator_hierarchy_inference = function(m.grn,
+                                                   m.pvalue_differentialExpression=m.pvalue_differentialExpression,
                                                    l.grn_subnetworks, 
                                                    df.transcriptionFactorAnnotation,
                                                    df.geneGroups,
@@ -2576,6 +2490,9 @@ do_master_regulator_hierarchy_inference = function(m.grn,
                                                    th.pval = 0.05, 
                                                    foldername.results = "results/"){
   
+  
+  v.genes = rownames(l.data$m.foldChange_differentialExpression)
+  v.group_genes = rownames(l.data$df.geneGroups)
   
   df.transcriptionFactorAnnotation = subset(df.transcriptionFactorAnnotation, df.transcriptionFactorAnnotation$with_geneExpression == "yes")
 
@@ -2597,6 +2514,8 @@ do_master_regulator_hierarchy_inference = function(m.grn,
   l.res.MR <- identify_bottom_tier_masterRegulators(m.grn,
                                                  l.grn_subnetworks,
                                                  v.tfs,
+                                                 v.genes = v.genes,
+                                                 v.group_genes = v.group_genes,
                                                  v.conds,
                                                  df.transcriptionFactorAnnotation,
                                                  df.geneGroups,
@@ -2608,8 +2527,7 @@ do_master_regulator_hierarchy_inference = function(m.grn,
                                                  b.include_under_represented = "yes")
 
   m.MR_vs_conditions <- l.res.MR$m.MR_vs_conditions  # A) TFs versus Conditions (Matrix plot) P(TF,C)
-  l.MR_vs_geneGroups_given_condition <- l.res.MR$l.MR_vs_geneGroups_given_condition  # B) per condition - TFs versus Domains (P(TF,D|C)) => also cumulative plot 
-  
+
   # check for 
   m.MR_vs_conditions[!is.na(m.MR_vs_conditions)] = 1
   m.MR_vs_conditions[is.na(m.MR_vs_conditions)] = 0
@@ -2632,7 +2550,6 @@ do_master_regulator_hierarchy_inference = function(m.grn,
   
   # per condition
   l.res = identify_regulatory_hierachy(m.MR_vs_conditions, 
-                                       l.MR_vs_geneGroups_given_condition, 
                                        m.grn,
                                        l.grn_subnetworks,
                                        v.tfs = rownames(m.grn),
@@ -2643,111 +2560,14 @@ do_master_regulator_hierarchy_inference = function(m.grn,
                                        v.geneGroups,
                                        l.geneGroups,
                                        th.min_number_MR_targets = th.min_number_MR_targets,
-                                       mode = "genes",
                                        th.pval = th.pval)
     
-  l.Hierarchy[[1]]=l.res$l.Hierarchy
-  l.Hierarchy_tfs_per_tier[[1]]=l.res$l.Hierarchy_tfs_per_tier
-  l.Hierarchy_nb_tfs_per_tier[[1]] = l.res$l.Hierarchy_nb_tfs_per_tier
-  l.df.masterRegulatorHierarchy[[1]]=l.res$df.masterRegulatorHierarchy
-  v.number_tiers[[1]]=l.res$v.number_tiers
+  l.Hierarchy =l.res$l.Hierarchy
+  l.Hierarchy_tfs_per_tier = l.res$l.Hierarchy_tfs_per_tier
+  l.Hierarchy_nb_tfs_per_tier = l.res$l.Hierarchy_nb_tfs_per_tier
+  l.df.masterRegulatorHierarchy = l.res$df.masterRegulatorHierarchy
+  v.number_tiers = l.res$v.number_tiers
   
-  
-  l.res = identify_regulatory_hierachy(m.MR_vs_conditions, 
-                                       l.MR_vs_geneGroups_given_condition, 
-                                       m.grn,
-                                       l.grn_subnetworks,
-                                       v.tfs = rownames(m.grn),
-                                       v.conds = names(l.grn_subnetworks),
-                                       df.transcriptionFactorAnnotation,
-                                       df.geneGroups,
-                                       tb.geneGroups,
-                                       v.geneGroups,
-                                       l.geneGroups,
-                                       th.min_number_MR_targets = th.min_number_MR_targets,
-                                       mode = "geneGroups",
-                                       th.pval = th.pval)
-    
-
-  l.Hierarchy[[2]]=l.res$l.Hierarchy
-  l.Hierarchy_tfs_per_tier[[2]]=l.res$l.Hierarchy_tfs_per_tier
-  l.Hierarchy_nb_tfs_per_tier[[2]] = l.res$l.Hierarchy_nb_tfs_per_tier
-  l.df.masterRegulatorHierarchy[[2]]=l.res$df.masterRegulatorHierarchy
-  v.number_tiers[[2]]=l.res$v.number_tiers
-  
- 
-  files = character(2)
-  files[1] = paste(foldername.results, "genes/", sep = "")
-  files[2] = paste(foldername.results, "geneGroups_masterRegulatorHierarchies/", sep = "")
-  # 
-  # if(!file.exists(paste(foldername.results, "genes/", sep = ""))){
-  #   dir.create(paste(foldername.results, "genes/", sep = ""))
-  # }
-  if(!file.exists(paste(foldername.results, "geneGroups_masterRegulatorHierarchies/", sep = ""))){
-    dir.create(paste(foldername.results, "geneGroups_masterRegulatorHierarchies/", sep = ""))
-  }
-
-  s = 2
-  for(i in 1:length(v.number_tiers[[s]])){
-    
-    if(v.number_tiers[[s]][i] > 0){
-
-      ct.i = names(v.number_tiers[[s]])[i]
-      tfs.i = rownames(l.MR_vs_geneGroups_given_condition[ct.i][[1]])
-      tgs.i = colnames(l.MR_vs_geneGroups_given_condition[ct.i][[1]])
-      l.Hierarchy[[s]][[i]][tfs.i, tgs.i] = l.MR_vs_geneGroups_given_condition[ct.i][[1]]
-      
-      tfs.i = paste(rownames(l.Hierarchy[[s]][[i]]), "(", v.tf_families[rownames(l.Hierarchy[[s]][[i]])], ")", sep ="")
-      tgs.i = colnames(l.Hierarchy[[s]][[i]])
-      tgs_tfs.i = tgs.i[!tgs.i %in% v.geneGroups]
-      tgs_tfs_w_fams.i = paste(tgs_tfs.i, "(", v.tf_families[tgs_tfs.i], ")", sep ="")
-      
-      m.net = l.Hierarchy[[s]][[i]]
-      rownames(m.net) = tfs.i
-      
-      idx = which(colnames(m.net) %in% v.geneGroups)
-      v.geneGroups.i = colnames(m.net)[idx]
-      
-      colnames(m.net) = c(tgs_tfs_w_fams.i, v.geneGroups.i)
-      
-      m.net[is.na(m.net)] = 0
-      m.net[m.net > 1] = 1
-      
-      #g <- graph_from_adjacency_matrix(m.net)
-      
-      df.idx.MR_hierarchy.i <- which(m.net > 0, arr.ind = TRUE)
-      
-      if(nrow(df.idx.MR_hierarchy.i) > 0){
-        
-        df.MR_hierarchy.i <- data.frame(TF = rownames(m.net)[df.idx.MR_hierarchy.i[,1]], TG = colnames(m.net)[df.idx.MR_hierarchy.i[,2]], stringsAsFactors = FALSE)
-        
-        g <- graph_from_data_frame(df.MR_hierarchy.i, directed = TRUE)
-        wc <- cluster_walktrap(g)
-        members <- membership(wc)
-        
-        #Convert to object suitable for networkD3
-        net_d3  <- igraph_to_networkD3(g,group = members)
-        
-        # filename = paste(output_folder, "Condition_specific_analyses\\df.regulatory_hiearchy_MR_per_tier_bottom_genes_enzymes.csv", sep = "")
-        # filename = paste(output_folder, "Condition_specific_analyses\\df.regulatory_hiearchy_MR_per_tier_bottom_genes_enzymes.csv", sep = "")
-        # subDir <- files[s]#  paste(output_folder, "C:/Users/Michael/Documents/Computational_Biology/MERIT_V1.0/figures/Analysis_per_condition/masterRegulatorHierarchies/", sep ="")
-        
-        subDir = files[s]
-        filename <- paste(getwd(), "/", subDir, ct.i,".html", sep ="")
-        net_d3$links["value"] <- 1
-        net_d3$nodes <- remove.factors(net_d3$nodes)
-        net_d3$nodes$name[!net_d3$nodes$name %in% v.geneGroups] <- paste(net_d3$nodes$name[!net_d3$nodes$name %in% v.geneGroups], "(", v.tf_families[as.character(net_d3$nodes$name[!net_d3$nodes$name %in% v.geneGroups])], ")", sep ="")
-        #
-        sankeyNetwork(Links = net_d3$links, Nodes = net_d3$nodes,
-                      Source = "source", Target = "target",
-                      NodeID = "name", Value = "value", 
-                      fontSize = 20, nodeWidth = 20, units = "Letter(s)", fontFamily = "sans-serif", iterations = 0,
-                      nodePadding = 1, height = 5000, width = 10000, sinksRight =TRUE, margin = NULL)%>%
-          htmlwidgets::prependContent(htmltools::tags$h1(paste("Master Regulator Hierarchy in condition: ",ct.i))) %>%
-          saveNetwork(file = filename)
-      }
-    }
-  }
   
   return(list(l.Hierarchy=l.Hierarchy, 
               l.Hierarchy_tfs_per_tier=l.Hierarchy_tfs_per_tier,
@@ -2755,7 +2575,6 @@ do_master_regulator_hierarchy_inference = function(m.grn,
               l.df.masterRegulatorHierarchy=l.df.masterRegulatorHierarchy,
               v.number_tiers=v.number_tiers,
               m.MR_vs_conditions = l.res.MR$m.MR_vs_conditions,  # A) TFs versus Conditions (Matrix plot) P(TF,C)
-              l.MR_vs_geneGroups_given_condition = l.res.MR$l.MR_vs_geneGroups_given_condition,  # B) per condition - TFs versus Domains (P(TF,D|C)) => also cumulative plot 
               number_of_conditions_per_master_regulator=number_of_conditions_per_master_regulator))
   
 }
@@ -2873,6 +2692,7 @@ format_results = function(l.grn_subnetworks,
 
   # Master Regulator
   if(TRUE){
+    
     hist(number_of_conditions_per_master_regulator / dim(m.MR_vs_conditions)[2] * 100)
     
     m.heatmap <- t(m.MR_vs_conditions)
@@ -3558,7 +3378,8 @@ run_MERIT <- function(b.load_grn_inference = "yes",
                       th.min_number_MR_targets = 2,
                       th.pval_masterRegulator = 0.05, 
                       foldername.tmp = "tmp/", 
-                      foldername.results = "results/"){
+                      foldername.results = "results/",
+                      df.pwys = NULL){
   
 
   
@@ -3662,55 +3483,6 @@ run_MERIT <- function(b.load_grn_inference = "yes",
                                                        th.multipleHypothesisTest = "bonferroni",
                                                        b.load = b.load_TFBS_inference)
 
-  
-  
-  
-  # 
-  # b.load_grn_inference = "yes"
-  # b.load_TFBS_inference = "yes"
-  # b.load_treatment_tissue_inference = "yes"
-  # m.foldChange_differentialExpression=l.data$m.foldChange_differentialExpression
-  # m.pvalue_differentialExpression=l.data$m.pvalue_differentialExpression
-  # df.experiment_condition_annotation=l.data$df.experiment_condition_annotation
-  # tb.condition_treatments=l.data$tb.condition_treatments
-  # tb.condition_tissues=l.data$tb.condition_tissues
-  # df.transcriptionFactorAnnotation=l.data$df.transcriptionFactorAnnotation
-  # df.geneGroups=l.data$df.geneGroups
-  # tb.geneGroups=l.data$tb.geneGroups
-  # v.geneGroups=l.data$v.geneGroups
-  # l.geneGroups=l.data$l.geneGroups 
-  # n.cpus = 4
-  # seed=1234
-  # importance.measure="impurity"
-  # n.trees=1000
-  # n.lead_method_expression_shuffling = 1
-  # n.bootstrap=100
-  # n.stepsLARS=5
-  # th.lead_grn_method = 0.95
-  # th.support_grn_methods = 0.95
-  # n.grnSupport = 1
-  # file.TF_to_Motif_IDs = "data/TF_to_Motif_IDs.txt"
-  # file.TFBS_motifs = "data/Transcription_factor_weight_matrix_Arabidopsis_thaliana.txt"
-  # file.promoterSeq = "data/TAIR10_upstream_1000_20101104.txt"
-  # file.geneSeq = "data/TAIR10_seq_20110103_representative_gene_model_updated.txt"
-  # th.pre_tss = 1000
-  # th.post_tss = 200
-  # genome_nucleotide_distribution = c(A = 0.3253439, C = 0.1746561, G = 0.1746561, T = 0.3253439 )
-  # th.pval.known_motifs = 0.05
-  # th.diffexp = 0.05
-  # th.pval.treatment = 0.05 
-  # th.pval.tissue = 0.05
-  # th.min.samples = 1
-  # s.multipleTestCorrection = "none"
-  # th.min_number_targets = 2
-  # th.min_number_MR_targets = 2
-  # th.pval = th.pval_masterRegulator = 0.05
-  # foldername.tmp = "tmp/"
-  # foldername.results = "results/"
-  # 
-  # b.load = "no"
-  # m.lead_support_w_motif.grn=l.res.grn_tfbs$m.lead_support_w_motif.grn
-  # 
   message("")
   message("--------------------------------------------------")
   message("Step 3 - Context specific annotation and filtering of gene regulatory link predictions")
@@ -3728,16 +3500,13 @@ run_MERIT <- function(b.load_grn_inference = "yes",
                                                                      b.load = b.load_treatment_tissue_inference)
   
   
-
-  # m.grn = l.res.link_annotation$m.grn
-  # l.grn_subnetworks = l.res.link_annotation$l.grn_subnetworks
-  # 
   
   message("")
   message("--------------------------------------------------")
   message("Step 4 - perform Master regulator hiearchy analysis")
   
   l.res.MR_hierarchy = do_master_regulator_hierarchy_inference(m.grn = l.res.link_annotation$m.grn,
+                                                               m.pvalue_differentialExpression=m.pvalue_differentialExpression,
                                                                l.grn_subnetworks = l.res.link_annotation$l.grn_subnetworks, 
                                                                df.transcriptionFactorAnnotation = df.transcriptionFactorAnnotation,
                                                                df.geneGroups,
@@ -3749,12 +3518,356 @@ run_MERIT <- function(b.load_grn_inference = "yes",
                                                                th.pval = th.pval_masterRegulator)
   
   
+  
+  # group regulators # 
+  th.pval = th.pval_masterRegulator
+  
+  
+  l.Hierarchy=l.res.MR_hierarchy$l.Hierarchy
+  l.Hierarchy_tfs_per_tier=l.res.MR_hierarchy$l.Hierarchy_tfs_per_tier
+  l.Hierarchy_nb_tfs_per_tier=l.res.MR_hierarchy$l.Hierarchy_nb_tfs_per_tier
+  l.df.masterRegulatorHierarchy=l.res.MR_hierarchy$l.df.masterRegulatorHierarchy
+  v.number_tiers=l.res.MR_hierarchy$v.number_tiers
+  m.MR_vs_conditions = l.res.MR_hierarchy$m.MR_vs_conditions  # A) TFs versus Conditions (Matrix plot) P(TF,C)
+  number_of_conditions_per_master_regulator=l.res.MR_hierarchy$number_of_conditions_per_master_regulator
+  
+  
+  
+  l.grn_subnetworks = l.res.link_annotation$l.grn_subnetworks
+  
+  
+  v.tfs = rownames(l.res.link_annotation$m.grn)
+  v.genes = rownames(l.data$m.foldChange_differentialExpression)
+  v.group_genes = rownames(l.data$df.geneGroups)
+  
+  n.group_genes = length(intersect(v.group_genes, v.genes))
+  n.genes = length(v.genes)
+
+  v.conds <- colnames(m.MR_vs_conditions)
+  
+  
+  # # metabolic domains 
+  l.tfs_vs_domains_given_condition <- vector(mode = "list", length = length(v.conds))
+  names(l.tfs_vs_domains_given_condition) <- v.conds
+
+  pb <- txtProgressBar(min = 0, max = length(v.conds), style = 3)
+  for(i in 1:length(v.conds)){
+
+    setTxtProgressBar(pb, i)
+
+    ct.i <- v.conds[i]
+    
+    m.grn.i <- as.matrix(l.grn_subnetworks[[i]])
+    df.idx.grn.i <- which(m.grn.i == 1, arr.ind = TRUE)
+    df.grn.i <- data.frame(TF = rownames(m.grn.i)[df.idx.grn.i[,1]], TG = colnames(m.grn.i)[df.idx.grn.i[,2]], stringsAsFactors = FALSE)
+
+    
+    l.tfs_vs_domains_given_condition[[i]] <- matrix(NA, nrow = length(v.tfs), ncol = length(v.geneGroups), dimnames = list(v.tfs, (v.geneGroups)))
+    
+    
+    if(nrow(df.grn.i) > 0){
+
+      idx = which(m.MR_vs_conditions[,ct.i] > 1 | m.MR_vs_conditions[,ct.i] < 1)
+      mr.grn.i = rownames(m.MR_vs_conditions)[idx]
+
+      for(j in 1:length(mr.grn.i)){
+
+        tf.ij <- mr.grn.i[j]
+
+        # number of links per transcription factor family member in the subnetwork
+        df.grn.ij <- subset(df.grn.i, df.grn.i$TF == tf.ij)  # number of targets in condition by TF
+
+        for(d in 1:length(v.geneGroups)){ # add the domain level
+
+          ## domain genes in target genes - condition dependent
+          hitInSample = n_A_B = length(intersect((unique(df.grn.ij$TG)), l.geneGroups[[d]]))
+          sampleSize = n_A = length(unique(df.grn.ij$TG))
+          hitInPop = n_B =  length(intersect(v.genes, l.geneGroups[[d]]))
+          popSize = n_C = n.genes
+          failInPop = n_C-n_B
+
+          if(hitInSample >= th.min_number_targets){
+
+            pval <- 1
+            fc <- (n_A_B / n_A) / (n_B / n_C)
+
+            if(fc > 1){
+              pval <- phyper(n_A_B, n_B, n_C-n_B, n_A,lower.tail= FALSE)
+            }else if(fc < 1){
+              pval <- phyper(n_A_B, n_B, n_C-n_B, n_A,lower.tail= TRUE)
+            }
+
+            if(pval <= th.pval){
+              l.tfs_vs_domains_given_condition[[i]][tf.ij,d] <- fc
+            }
+
+          }
+        }
+
+      }
+    }
+    
+  }
+
+  close(pb)
+  
+  
+  
+  
+  df.pwy_regulation = c()
+  
+  v.pwys = unique(df.pwys$Pathway.name)
+  
+
+  pb <- txtProgressBar(min = 0, max = length(v.conds), style = 3)
+  for(i in 1:length(v.conds)){
+    
+    setTxtProgressBar(pb, i)
+    
+    ct.i <- v.conds[i]
+    
+    m.grn.i <- as.matrix(l.grn_subnetworks[[i]])
+    df.idx.grn.i <- which(m.grn.i == 1, arr.ind = TRUE)
+    df.grn.i <- data.frame(TF = rownames(m.grn.i)[df.idx.grn.i[,1]], TG = colnames(m.grn.i)[df.idx.grn.i[,2]], stringsAsFactors = FALSE)
+    
+    l.tfs_vs_domains_given_condition[[i]] <- matrix(NA, nrow = length(v.tfs), ncol = length(v.geneGroups), dimnames = list(v.tfs, (v.geneGroups)))
+    
+    if(nrow(df.grn.i) > 0){
+      
+      for(p in 1:length(v.pwys)){ # add the domain level
+        
+        df.pwys.p = subset(df.pwys, df.pwys$Pathway.name == v.pwys[p])
+        v.gns.p = df.pwys.p$Gene.id
+        
+        idx = which(m.MR_vs_conditions[,ct.i] > 1 | m.MR_vs_conditions[,ct.i] < 1)
+        mr.grn.i = rownames(m.MR_vs_conditions)[idx]
+      
+        df.grn.ij <- subset(df.grn.i, df.grn.i$TF %in% mr.grn.i ) 
+        df.grn.ij <- subset(df.grn.ij, df.grn.ij$TG %in% v.gns.p ) 
+        
+        
+        if(nrow(df.grn.ij) > 0){
+          
+          tgs = length(unique(df.grn.ij$TG))
+          tfs = length(unique(df.grn.ij$TF))
+        
+          df.pwy_regulation <- rbind(df.pwy_regulation, data.frame(condition_tissue = ct.i, 
+                                                                   pathway = v.pwys[p],
+                                                                   tfs = tfs,
+                                                                   tgs = tgs,
+                                                                   ratio_tfs_vs_tgs = tfs / tgs))
+                                                         
+          
+        }
+      }
+    }
+  }
+  close(pb)
+      
+      
+  write.csv(df.pwy_regulation, "results/df.condition_specific_pathway_regulation.csv", row.names = F)
+        
+  
+  
+  
+  
+  
+  
+  
+  
+  # 
+  # #       
+  # #       
+  #       
+  #       
+  #       
+  #       
+  #       
+  #       # condition specific network 
+  #       n.group_genes.ij = length(which(df.grn.ij$TG %in% v.group_genes))
+  #       n.genes.ij   = nrow(df.grn.ij)
+  #       
+  #       hitInSample = n_A_B = n.group_genes.ij
+  #       sampleSize = n_A = n.genes.ij
+  #       hitInPop = n_B = n.group_genes
+  #       popSize = n_C = n.genes
+  #       failInPop = n_C - n_B
+  #       
+  #       if(hitInSample >= th.min_number_targets){
+  #         
+  #         pval <- 1
+  #         fc <- (n_A_B / n_A) / (n_B / n_C)
+  #         
+  #         if(fc > 1){
+  #           pval <- phyper(n_A_B, n_B, n_C-n_B, n_A,lower.tail= FALSE)
+  #         }else if(fc < 1 & b.include_under_represented == "yes"){
+  #           pval <- phyper(n_A_B, n_B, n_C-n_B, n_A,lower.tail= TRUE)
+  #         }
+  #         
+  #         if(pval <= th.pval){
+  #           m.tfs_vs_conditions[tf.ij,ct.i] <- fc # enriched or depleated over 
+  #         }else{
+  #           m.tfs_vs_conditions[tf.ij,ct.i] <- 1
+  #         }
+  #         
+  #       }
+  #     }
+  #   }
+  # }
+  # close(pb)
+  # 
+  # 
+  # 
+  # 
+  # 
+  # # save hierarchy... 
+  # 
+  # 
+  # 
+  # 
+  # # ..... 
+  # 
+  # # 
+  # 
+  # 
+  # ##### ..... 
+  # 
+  # 
+  # 
+  # 
+
+  # 
+  # 
+  # 
+  # df.geneGroups,
+  # tb.geneGroups,
+  # v.geneGroups,
+  # l.geneGroups,
+  # 
+  # 
+  # 
+  # ### filter to the enrichment of domains (no higher level enrichment)
+  # 
+  # 
+  # 
+  # # B) per condition - TFs versus Domains (P(TF,D|C)) => also cumulative plot 
+  # 
+  # 
+  # 
+  # 
+  # 
+  # 
+  # 
+  # # check for domain enrichment 
+  # 
+  # 
+  # l.res = identify_regulatory_hierachy(m.MR_vs_conditions, 
+  #                                      l.MR_vs_geneGroups_given_condition, 
+  #                                      m.grn,
+  #                                      l.grn_subnetworks,
+  #                                      v.tfs = rownames(m.grn),
+  #                                      v.conds = names(l.grn_subnetworks),
+  #                                      df.transcriptionFactorAnnotation,
+  #                                      df.geneGroups,
+  #                                      tb.geneGroups,
+  #                                      v.geneGroups,
+  #                                      l.geneGroups,
+  #                                      th.min_number_MR_targets = th.min_number_MR_targets,
+  #                                      mode = "geneGroups",
+  #                                      th.pval = th.pval)
+  # 
+  # 
+  # l.Hierarchy[[2]]=l.res$l.Hierarchy
+  # l.Hierarchy_tfs_per_tier[[2]]=l.res$l.Hierarchy_tfs_per_tier
+  # l.Hierarchy_nb_tfs_per_tier[[2]] = l.res$l.Hierarchy_nb_tfs_per_tier
+  # l.df.masterRegulatorHierarchy[[2]]=l.res$df.masterRegulatorHierarchy
+  # v.number_tiers[[2]]=l.res$v.number_tiers
+  # 
+  # 
+  # files = character(2)
+  # files[1] = paste(foldername.results, "genes/", sep = "")
+  # files[2] = paste(foldername.results, "geneGroups_masterRegulatorHierarchies/", sep = "")
+  # # 
+  # # if(!file.exists(paste(foldername.results, "genes/", sep = ""))){
+  # #   dir.create(paste(foldername.results, "genes/", sep = ""))
+  # # }
+  # if(!file.exists(paste(foldername.results, "geneGroups_masterRegulatorHierarchies/", sep = ""))){
+  #   dir.create(paste(foldername.results, "geneGroups_masterRegulatorHierarchies/", sep = ""))
+  # }
+  # 
+  # s = 2
+  # for(i in 1:length(v.number_tiers[[s]])){
+  #   
+  #   if(v.number_tiers[[s]][i] > 0){
+  #     
+  #     ct.i = names(v.number_tiers[[s]])[i]
+  #     tfs.i = rownames(l.MR_vs_geneGroups_given_condition[ct.i][[1]])
+  #     tgs.i = colnames(l.MR_vs_geneGroups_given_condition[ct.i][[1]])
+  #     l.Hierarchy[[s]][[i]][tfs.i, tgs.i] = l.MR_vs_geneGroups_given_condition[ct.i][[1]]
+  #     
+  #     tfs.i = paste(rownames(l.Hierarchy[[s]][[i]]), "(", v.tf_families[rownames(l.Hierarchy[[s]][[i]])], ")", sep ="")
+  #     tgs.i = colnames(l.Hierarchy[[s]][[i]])
+  #     tgs_tfs.i = tgs.i[!tgs.i %in% v.geneGroups]
+  #     tgs_tfs_w_fams.i = paste(tgs_tfs.i, "(", v.tf_families[tgs_tfs.i], ")", sep ="")
+  #     
+  #     m.net = l.Hierarchy[[s]][[i]]
+  #     rownames(m.net) = tfs.i
+  #     
+  #     idx = which(colnames(m.net) %in% v.geneGroups)
+  #     v.geneGroups.i = colnames(m.net)[idx]
+  #     
+  #     colnames(m.net) = c(tgs_tfs_w_fams.i, v.geneGroups.i)
+  #     
+  #     m.net[is.na(m.net)] = 0
+  #     m.net[m.net > 1] = 1
+  #     
+  #     #g <- graph_from_adjacency_matrix(m.net)
+  #     
+  #     df.idx.MR_hierarchy.i <- which(m.net > 0, arr.ind = TRUE)
+  #     
+  #     if(nrow(df.idx.MR_hierarchy.i) > 0){
+  #       
+  #       df.MR_hierarchy.i <- data.frame(TF = rownames(m.net)[df.idx.MR_hierarchy.i[,1]], TG = colnames(m.net)[df.idx.MR_hierarchy.i[,2]], stringsAsFactors = FALSE)
+  #       
+  #       g <- graph_from_data_frame(df.MR_hierarchy.i, directed = TRUE)
+  #       wc <- cluster_walktrap(g)
+  #       members <- membership(wc)
+  #       
+  #       #Convert to object suitable for networkD3
+  #       net_d3  <- igraph_to_networkD3(g,group = members)
+  #       
+  #       # filename = paste(output_folder, "Condition_specific_analyses\\df.regulatory_hiearchy_MR_per_tier_bottom_genes_enzymes.csv", sep = "")
+  #       # filename = paste(output_folder, "Condition_specific_analyses\\df.regulatory_hiearchy_MR_per_tier_bottom_genes_enzymes.csv", sep = "")
+  #       # subDir <- files[s]#  paste(output_folder, "C:/Users/Michael/Documents/Computational_Biology/MERIT_V1.0/figures/Analysis_per_condition/masterRegulatorHierarchies/", sep ="")
+  #       
+  #       subDir = files[s]
+  #       filename <- paste(getwd(), "/", subDir, ct.i,".html", sep ="")
+  #       net_d3$links["value"] <- 1
+  #       net_d3$nodes <- remove.factors(net_d3$nodes)
+  #       net_d3$nodes$name[!net_d3$nodes$name %in% v.geneGroups] <- paste(net_d3$nodes$name[!net_d3$nodes$name %in% v.geneGroups], "(", v.tf_families[as.character(net_d3$nodes$name[!net_d3$nodes$name %in% v.geneGroups])], ")", sep ="")
+  #       #
+  #       sankeyNetwork(Links = net_d3$links, Nodes = net_d3$nodes,
+  #                     Source = "source", Target = "target",
+  #                     NodeID = "name", Value = "value", 
+  #                     fontSize = 20, nodeWidth = 20, units = "Letter(s)", fontFamily = "sans-serif", iterations = 0,
+  #                     nodePadding = 1, height = 5000, width = 10000, sinksRight =TRUE, margin = NULL)%>%
+  #         htmlwidgets::prependContent(htmltools::tags$h1(paste("Master Regulator Hierarchy in condition: ",ct.i))) %>%
+  #         saveNetwork(file = filename)
+  #     }
+  #   }
+  # }
+  # 
+  # 
+  # 
+  # 
+  
 
   message("--------------------------------------------------")
   return(list(l.res.grn = l.res.grn,
               l.res.grn_tfbs = l.res.grn_tfbs,
               l.res.link_annotation = l.res.link_annotation,
-              l.res.MR_hierarchy = l.res.MR_hierarchy))
+              l.res.MR_hierarchy = l.res.MR_hierarchy, 
+              l.tfs_vs_domains_given_condition = l.tfs_vs_domains_given_condition))
   
 }                       
 
