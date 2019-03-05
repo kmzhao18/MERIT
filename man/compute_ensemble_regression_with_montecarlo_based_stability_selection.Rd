@@ -15,6 +15,9 @@
 \arguments{
 \item{k}{(default k="sqrt")}
 }
+\value{
+none, results are stored in tmp folder
+}
 \description{
 Step 1 - Gene regulatory network inference using ensemble regression with Monte Carlo based threshold selection
 }

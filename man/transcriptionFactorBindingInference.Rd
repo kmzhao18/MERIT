@@ -14,6 +14,9 @@ transcriptionFactorBindingInference(m.grn, file.TF_to_Motif_IDs = "",
 \arguments{
 \item{m.grn}{gene regulatory network}
 }
+\value{
+DNA binding based grn, DNA binding filtered lead-support grn
+}
 \description{
 Step 2 - Transcription factor direct target promoter binding based filtering of gene regulatory link predictions
 }

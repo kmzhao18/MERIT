@@ -22,6 +22,9 @@ do_master_regulator_hierarchy_inference(m.grn,
 
 \item{th.pval}{= 0.05}
 }
+\value{
+condition specific master regulators and regulator hierarchies (across all genes and across gene groups)
+}
 \description{
 This function identifies the master regulator hierarchy
 }

@@ -94,12 +94,8 @@ run_MERIT(b.load_grn_inference = "yes", b.load_TFBS_inference = "yes",
 
 \item{nstepsLARS}{(default = 5)}
 }
-\description{
-run algorithm
-}
-\examples{
-
-
+\value{
+a list of results from all 4 steps
 setwd(...) # set to dataset
 
 
@@ -160,12 +156,19 @@ l.results = run_MERIT(b.load_grn_inference = "yes",
 
 
 
+
+
+# Step 1 - Gene regulatory network inference using ensemble regression with Monte Carlo based threshold selection 
 l.res.grn = l.results$l.res.grn
+
+# Step 2 - Transcription factor direct target promoter binding based filtering of gene regulatory link predictions
 l.res.grn_tfbs = l.results$l.res.grn_tfbs
+
+# Step3 - Context specific annotation and filtering of gene regulatory link predictions
 l.res.link_annotation = l.results$l.res.link_annotation
+
+# Step 4 - Master regulator hierarchy inference
 l.res.MR_hierarchy = l.results$l.res.MR_hierarchy
-l.MR_vs_geneGroups_given_condition = l.res.MR_hierarchy$l.MR_vs_geneGroups_given_condition
-m.MR_vs_conditions = l.res.MR_hierarchy$m.MR_vs_conditions
 
 
 
@@ -189,7 +192,10 @@ format_results(l.grn_subnetworks = l.res.link_annotation$l.grn_subnetworks,
                th.pval = 0.05,
                foldername.results = "results/",
                file.subGeneGroups = "data/aracyc_pathways.20180327")
+}
+\description{
+run algorithm
+}
+\examples{
 
-
-               
 }

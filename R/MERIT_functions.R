@@ -880,6 +880,7 @@ compute_linearRegressionWithStabilitySelection_based_GRN <- function(mat.express
 #' @param nbootstrap
 #' @param nstepsLARS
 #' @param n.cpus
+#' @return none, results are stored in tmp folder
 #' @keywords 
 #' @export
 #' @examples
@@ -1218,6 +1219,7 @@ load_datasets = function(filename.genes = "data/genes.txt",
 #'
 #' 
 #' @param m.grn gene regulatory network 
+#' @return DNA binding based grn and p-values, filtered lead-support grn
 #' @keywords 
 #' @export
 #' @examples
@@ -1450,6 +1452,7 @@ transcriptionFactorBindingInference_with_TFBStools <- function(m.grn,
 #'
 #' 
 #' @param m.grn gene regulatory network 
+#' @return DNA binding based grn, DNA binding filtered lead-support grn
 #' @keywords 
 #' @export
 #' @examples
@@ -2030,8 +2033,6 @@ perform_treatment_and_tissue_filtering <- function(m.grn,
 
 
 
-
-
 #' Step 3 - Context specific annotation and filtering of gene regulatory link predictions
 #'
 #' This function filter... 
@@ -2044,6 +2045,7 @@ perform_treatment_and_tissue_filtering <- function(m.grn,
 #' @param th.min_number_targets = 2,
 #' @param th.min_number_MR_targets = 2,
 #' @param th.pval = 0.05
+#' @return DNA binding and treatment filtered lead-support grn, condition specific subnetworks, statistics
 #' @keywords 
 #' @export
 #' @examples
@@ -2411,8 +2413,6 @@ identify_regulatory_hierachy = function(m.MR_vs_conditions,
 
 
 
-
-
 #' Step 4 - Master regulator hierarchy inference
 #'
 #' This function identifies the master regulator hierarchy
@@ -2425,6 +2425,7 @@ identify_regulatory_hierachy = function(m.MR_vs_conditions,
 #' @param th.min_number_targets = 2,
 #' @param th.min_number_MR_targets = 2,
 #' @param th.pval = 0.05
+#' @return condition specific master regulators and regulator hierarchies (across all genes and across gene groups)
 #' @keywords 
 #' @export
 #' @examples
@@ -3586,7 +3587,7 @@ format_results = function(l.grn_subnetworks,
 #' @export
 #' @examples
 #' 
-#' 
+#' @return a list of results from all 4 steps
 #' setwd(...) # set to dataset
 #' 
 #' 
@@ -3647,12 +3648,19 @@ format_results = function(l.grn_subnetworks,
 #' 
 #' 
 #' 
+#' 
+#' 
+#' # Step 1 - Gene regulatory network inference using ensemble regression with Monte Carlo based threshold selection 
 #' l.res.grn = l.results$l.res.grn
+#' 
+#' # Step 2 - Transcription factor direct target promoter binding based filtering of gene regulatory link predictions
 #' l.res.grn_tfbs = l.results$l.res.grn_tfbs
+#'
+#' # Step3 - Context specific annotation and filtering of gene regulatory link predictions
 #' l.res.link_annotation = l.results$l.res.link_annotation
+#' 
+#' # Step 4 - Master regulator hierarchy inference
 #' l.res.MR_hierarchy = l.results$l.res.MR_hierarchy
-#' l.MR_vs_geneGroups_given_condition = l.res.MR_hierarchy$l.MR_vs_geneGroups_given_condition
-#' m.MR_vs_conditions = l.res.MR_hierarchy$m.MR_vs_conditions
 #' 
 #' 
 #' 

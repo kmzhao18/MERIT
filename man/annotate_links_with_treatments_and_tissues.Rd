@@ -22,6 +22,9 @@ annotate_links_with_treatments_and_tissues(m.lead_support_w_motif.grn,
 
 \item{th.pval}{= 0.05}
 }
+\value{
+DNA binding and treatment filtered lead-support grn, condition specific subnetworks, statistics
+}
 \description{
 This function filter...
 }
