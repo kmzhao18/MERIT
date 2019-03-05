@@ -11,7 +11,10 @@ The easiest way to install `MERIT` is through `devtools` (see OS specific notes 
 ```
 # install.packages("devtools")
 library(devtools)
-install_github("MERIT","mbanf")
+# depending on your system (Windows, Mac or linux) please use
+install_github("https://github.com/mbanf/METACLUSTER")
+# or
+install_github("METACLUSTER","mbanf")
 
 ```
 
@@ -31,6 +34,8 @@ setwd("/User/home/MERIT_Athaliana_PMN") # set working directory to the dataset f
 
 Load datasets parameters:
 
+
+
 * `filename.genes` genes (rows of the expression datasets)
 * `filename.experiment_ids` experimental datasets (columns of the expression datasets)
 * `filename.foldChange_differentialExpression` differential expression data (fold changes)
@@ -44,7 +49,7 @@ l.data  =  load_datasets(filename.genes = "data/genes.txt",
                          filename.experiment_ids = "data/experiment_ids.txt",
                          filename.foldChange_differentialExpression = "data/m.foldChange_differentialExpression.txt",
                          filename.pvalue_differentialExpression =	"data/m.pvalue_differentialExpression.txt",
-                         filename.experiment_condition_tissue_annotation =	"data/experiment_annotation.txt",
+                         filename.experiment_condition_tissue_annotation = "data/experiment_annotation.txt",
                          filename.transcriptionfactor_annotation = "data/df.transcriptionFactorAnnotation.txt", 
                          filename.geneGroups = "data/df.enzymes_w_metabolic_domains.txt")
 ```
@@ -61,52 +66,48 @@ MERIT Parameter sets:
 * `m.foldChange_differentialExpression` differential expression foldchange matrix - rows are genes, cols are experiments
 * `m.pvalue_differentialExpression` differential expression pvalue matrix - rows are genes, cols are experiments
 * `df.experiment_condition_annotation` experiment condition annotation
+* `tb.condition_treatments
+* `tb.condition_tissues
+* `df.transcriptionFactorAnnotation
 * `df.geneGroups` 
 * `tb.geneGroups`
 * `v.geneGroups` 
 * `l.geneGroups`
-* `tb.condition_treatments` table of conditions
-* `tb.condition_tissues` table of tissues
 * `n.cpus` number of cores used
-
+* `seed` (default = 1234)
+* `importance.measure` (default = "impurity")
+* `n.trees` (default = 1000)
+* `n.lead_method_expression_shuffling` (default  = 1)
+* `nbootstrap` (default = 100)
+* `nstepsLARS` (default = 5)
 * `th.lead_grn_method` (default = 0.95)
 * `th.support_grn_methods` (default = 0.95)
 * `n.grnSupport` (default = 1)
-
-* `file.TF_to_Motif_IDs` = "data/TF_to_Motif_IDs.txt",
-* `file.TFBS_motifs` = "data/Transcription_factor_weight_matrix_Arabidopsis_thaliana.txt")
-* `file.promoterSeq` = "data/TAIR10_upstream_1000_20101104.txt")
-* `file.geneSeq` = "data/TAIR10_seq_20110103_representative_gene_model_updated.txt")
+* `file.TF_to_Motif_IDs`
+* `file.TFBS_motifs`
+* `file.promoterSeq`
+* `file.geneSeq`
 * `th.pre_tss` (default = 1000)
 * `th.post_tss` (default = 200)
 * `genome_nucleotide_distribution` A,C,G,T nucleotide distritbution (default = c(0.3253439, 0.1746561, 0.1746561, 0.3253439))
-* `th.pval.known_motifs` = 0.05)
-
-* `th.diffexp` = 0.05)
-* `th.pval.treatment` = 0.05) 
-* `th.pval.tissue` = 0.05)
-* `th.min.samples` = 1)
-* `s.multipleTestCorrection` = "none")
-* `seed` (default = 1234)
-
+* `th.pval.known_motifs` (default = 0.05)
+* `th.diffexp` (default = 0.05)
+* `th.pval.treatment` (default = 0.05) 
+* `th.pval.tissue` (default = 0.05)
+* `th.min.samples` (default = 1)
+* `s.multipleTestCorrection` (default = "none")
 * `th.min_number_targets` (default = 2),
 * `th.min_number_MR_targets` (default = 2),
 * `th.pval_masterRegulator` (default = 0.05)
-
-* `importance.measure` (default = "impurity")
-* `n.trees` (default = 1000)
-* `n.lead_method_expression_shuffling` (default  = 3)
-* `nbootstrap` (default = 100)
-* `nstepsLARS` (default = 5)
-
 * `foldername.tmp` temp file folder name (default = tmp/)
 * `foldername.results` results file folder name (default = results/)
 
 ```
 
+
 l.results = run_MERIT(b.load_grn_inference = "yes",
-                      b.load_TFBS_inference = "no",
-                      b.load_treatment_tissue_inference = "no",
+                      b.load_TFBS_inference = "yes",
+                      b.load_treatment_tissue_inference = "yes",
                       m.foldChange_differentialExpression=l.data$m.foldChange_differentialExpression,
                       m.pvalue_differentialExpression=l.data$m.pvalue_differentialExpression,
                       df.experiment_condition_annotation=l.data$df.experiment_condition_annotation,
@@ -117,7 +118,7 @@ l.results = run_MERIT(b.load_grn_inference = "yes",
                       tb.geneGroups=l.data$tb.geneGroups,
                       v.geneGroups=l.data$v.geneGroups,
                       l.geneGroups=l.data$l.geneGroups, 
-                      n.cpus = 4,
+                      n.cpus = 5,
                       seed=1234,
                       importance.measure="impurity",
                       n.trees=1000,
@@ -172,8 +173,8 @@ format_results(l.grn_subnetworks = l.res.link_annotation$l.grn_subnetworks,
                l.Hierarchy_nb_tfs_per_tier=l.res.MR_hierarchy$l.Hierarchy_nb_tfs_per_tier,
                l.df.masterRegulatorHierarchy=l.res.MR_hierarchy$l.df.masterRegulatorHierarchy,
                v.number_tiers=l.res.MR_hierarchy$v.number_tiers, 
-               m.MR_vs_conditions = l.res.MR_hierarchy$m.MR_vs_conditions,  # A) TFs versus Conditions (Matrix plot) P(TF,C)
-               l.MR_vs_geneGroups_given_condition = l.res.MR_hierarchy$l.MR_vs_geneGroups_given_condition,  # B) per condition - TFs versus Domains (P(TF,D|C)) => also cumulative plot 
+               m.MR_vs_conditions = l.res.MR_hierarchy$m.MR_vs_conditions, 
+               l.MR_vs_geneGroups_given_condition = l.res.MR_hierarchy$l.MR_vs_geneGroups_given_condition,   
                number_of_conditions_per_master_regulator=l.res.MR_hierarchy$number_of_conditions_per_master_regulator,
                tb.condition_treatments=l.data$tb.condition_treatments,
                tb.condition_tissues=l.data$tb.condition_tissues,
@@ -183,7 +184,8 @@ format_results(l.grn_subnetworks = l.res.link_annotation$l.grn_subnetworks,
                v.geneGroups=l.data$v.geneGroups,
                l.geneGroups=l.data$l.geneGroups,
                th.pval = 0.05,
-               foldername.results = "results/")
+               foldername.results = "results/",
+               file.subGeneGroups = "data/aracyc_pathways.20180327")
 
 ```
 
