@@ -65,9 +65,9 @@ MERIT Parameter sets:
 * `m.foldChange_differentialExpression` differential expression foldchange matrix - rows are genes, cols are experiments
 * `m.pvalue_differentialExpression` differential expression pvalue matrix - rows are genes, cols are experiments
 * `df.experiment_condition_annotation` experiment condition annotation
-* ` tb.condition_treatments
-* ` tb.condition_tissues
-* ` df.transcriptionFactorAnnotation
+*` tb.condition_treatments
+*` tb.condition_tissues
+*` df.transcriptionFactorAnnotation
 * `df.geneGroups` 
 * `tb.geneGroups`
 * `v.geneGroups` 
