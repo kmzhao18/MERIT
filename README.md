@@ -24,7 +24,7 @@ To run the MERIT with the A. thaliana data you can download all neccessary datas
 ```
 library(MERIT) # load package
 
-setwd("/User/home/athaliana_PMN_2017") # set working directory to the dataset files
+setwd("/User/home/MERIT_Athaliana_PMN") # set working directory to the dataset files
 
 
 ```
