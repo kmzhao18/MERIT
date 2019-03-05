@@ -4,9 +4,10 @@
 \alias{do_master_regulator_hierarchy_inference}
 \title{Step 4 - Master regulator hierarchy inference}
 \usage{
-do_master_regulator_hierarchy_inference(m.grn, l.grn_subnetworks,
-  df.transcriptionFactorAnnotation, df.geneGroups, tb.geneGroups,
-  v.geneGroups, l.geneGroups, th.min_number_targets = 2,
+do_master_regulator_hierarchy_inference(m.grn,
+  m.pvalue_differentialExpression = m.pvalue_differentialExpression,
+  l.grn_subnetworks, df.transcriptionFactorAnnotation, df.geneGroups,
+  tb.geneGroups, v.geneGroups, l.geneGroups, th.min_number_targets = 2,
   th.min_number_MR_targets = 2, th.pval = 0.05,
   foldername.results = "results/")
 }

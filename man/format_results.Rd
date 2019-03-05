@@ -12,7 +12,7 @@ format_results(l.grn_subnetworks,
   number_of_conditions_per_master_regulator, tb.condition_treatments,
   tb.condition_tissues, df.transcriptionFactorAnnotation, df.geneGroups,
   tb.geneGroups, v.geneGroups, l.geneGroups, th.pval = 0.05,
-  foldername.results = "results/")
+  foldername.results = "results/", file.subGeneGroups = NULL)
 }
 \description{
 This function formats all results
