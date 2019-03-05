@@ -20,7 +20,7 @@ install_github("METACLUSTER","mbanf")
 
 ## Usage
 
-To run the MERIT with the A. thaliana data you can download all neccessary datasets from onedrive: [datasets_athaliana_PMN](https://1drv.ms/f/s!Avm82Xhe9EZj5Ui1U5zLekQ5i8Nu)
+To run the MERIT with the A. thaliana data you can download all neccessary datasets from onedrive: [datasets_athaliana_PMN](https://1drv.ms/u/s!Avm82Xhe9EZj5WBvTaZj6zgm2Ytw)
 
 
 
