@@ -17,7 +17,7 @@ install_github("MERIT","mbanf")
 
 ## Usage
 
-To run the MERIT with the A. thaliana data you can download all neccessary datasets from onedrive: [datasets_athaliana_w_PMN_2017](https://1drv.ms/u/s!Avm82Xhe9EZj416NuHxfrwR6Qfi8)
+To run the MERIT with the A. thaliana data you can download all neccessary datasets from onedrive: [datasets_athaliana_PMN](https://1drv.ms/f/s!Avm82Xhe9EZj5Ui1U5zLekQ5i8Nu)
 
 
 
