@@ -62,7 +62,6 @@ MERIT Parameter sets:
 * `b.load_grn_inference` load precomputed grns ("yes", "no")
 * `b.load_TFBS_inference` load precomputed TFBS ("yes","no")
 * `b.load_treatment_tissue_inference` load precomputed annotation filgerung ("yes","no")
-
 * `m.foldChange_differentialExpression` differential expression foldchange matrix - rows are genes, cols are experiments
 * `m.pvalue_differentialExpression` differential expression pvalue matrix - rows are genes, cols are experiments
 * `df.experiment_condition_annotation` experiment condition annotation
